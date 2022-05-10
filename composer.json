@@ -6,7 +6,9 @@
     "license": "MIT",
     "require": {
         "php": "^7.3|^8.0",
+        "cartalyst/stripe-laravel": "^13.1",
         "dipeshsukhia/laravel-country-state-city-data": "^2.0",
+        "doctrine/dbal": "^3.2",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "label84/laravel-hours-helper": "^1.2",

@@ -110,14 +110,23 @@
 
 <script setup>
 import { ref } from "@vue/reactivity";
-import { MDBTable } from 'mdb-vue-ui-kit';
-import MainModal from '../../custom-components/MainModal.vue';
+import { watchEffect } from "@vue/runtime-core";
+import { MDBTable } from "mdb-vue-ui-kit";
+import { useRouter } from "vue-router";
+import { useStore } from "vuex";
+import MainModal from "../../modals/BookingDetail.vue";
 
+const store = useStore();
+const router = useRouter();
 const ShowModal = ref(false);
+
+watchEffect(() => {
+  store.dispatch('redirection');
+});
 
 const closeModal = () => {
   ShowModal.value = false;
-}
+};
 
 const bookings = ref([
   {
@@ -162,5 +171,4 @@ const bookings = ref([
 .fs-custom {
   font-size: 0.84rem;
 }
-
 </style>

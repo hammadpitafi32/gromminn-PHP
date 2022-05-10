@@ -16,28 +16,34 @@ trait CategoryTrait {
      * @return $this|false|string
      */
 
+    public function findCategory($id)
+    {
+        return UserCategory::with('user_business_category_services')->find($id);
+    }
+
     public function createOrUpdateCategory(Request $request)
     {
         
-        $category = $request->id ?  Category::find($request->id) : new Category;
+        $user_category = $request->id ?  UserCategory::find($request->id) : new UserCategory;
 
-        $category = $category->updateOrCreate([
-                'name' => $request->name
-            ],
-            [
-                'name' => $request->name
-            ]
-        );
+        if ($request->id && $user_category == null) 
+        {
+            return;
+        }
+        $user_category->user_id = Auth::id();
+        $user_category->name = $request->name;
+        $user_category->save();
+        
         /*bind with business*/
-        BusinessCategory::updateOrCreate([
-                'business_id' => $request->business_id?:1,
-                'category_id' => $category->id
-            ],
-            [
-                'business_id' => $request->business_id?:1,
-                'category_id' => $category->id
-            ]
-        );
+        // BusinessCategory::updateOrCreate([
+        //         'business_id' => $request->business_id?:1,
+        //         'category_id' => $category->id
+        //     ],
+        //     [
+        //         'business_id' => $request->business_id?:1,
+        //         'category_id' => $category->id
+        //     ]
+        // );
         // if (Auth::user()->role->name == 'Provider') 
         // {
         //     UserCategory::updateOrCreate([
@@ -52,14 +58,46 @@ trait CategoryTrait {
         // }
         
 
-        return $category;
+        return $user_category->only('id','name');
     }
 
-    public function userCategories()
+    public function userCategories($request)
     {
-        return Category::select('id','name')->paginate(10);
-        // dd($categories);
-        // retrun $categories;
+        $user_categories = UserCategory::select('id','name')->where('user_id',Auth::id());
+        if ($request->pagination == 'false') 
+        {
+            $user_categories= $user_categories->get();
+        }
+        else
+        {
+            $user_categories =$user_categories->paginate(10);
+        }
+        return $user_categories;
+        
+    }
+
+    public function deleteCategory($id)
+    {
+        $category = $this->findCategory($id);
+        // dd($category->user_business_category_services);
+        if ($category) 
+        {
+            $category->delete();
+        }
+        else
+        {
+            // $business = UserBusiness::withTrashed()->find(7);
+            // // dd($business,$id);
+            // $business->restore();
+            return response()->json([
+                'success' => false,
+                'message' => 'User category not found!'
+            ], 400);
+        }
+        return response()->json([
+            'success' => true,
+            'message' => 'User category deleted successfully!'
+        ], 200);
     }
   
 }

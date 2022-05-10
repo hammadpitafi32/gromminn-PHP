@@ -5,7 +5,11 @@
         <div class="d-flex align-items-center justify-content-between px-5">
           <h6 class="text-orange fw-bold mb-0 fs-custom">My Categories</h6>
           <MDBBtn
-            @click="AddNewCategoryModal = true"
+            @click="
+              (AddNewCategoryModal = true),
+                (editMode = false),
+                ((category.name = ''), (category.id = ''))
+            "
             class="
               bg-orange
               text-white
@@ -69,55 +73,70 @@
               "
             >
               <span class="fs-custom text-orange">Categories</span>
-              <a href="javascript:void(0)" class="text-orange fs-custom me-3"
-                >Edit</a
-              >
+              <span class="text-orange fs-custom me-3">Edit</span>
             </div>
-
-            <div
-              v-for="(category, index) in subCategories"
-              :key="index"
-              class="
-                d-flex
-                align-items-center
-                justify-content-between
-                py-4
-                px-3
-                border-bottom
-              "
-            >
-              <span class="fs-custom fw-bold">{{ category.title }}</span>
-              <div class="actions">
-                <a href="javascript:void(0)" class="text-orange me-3">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M4.371 19.2C4.431 19.2 4.491 19.194 4.551 19.185L9.597 18.3C9.657 18.288 9.714 18.261 9.756 18.216L22.473 5.499C22.5008 5.47125 22.5229 5.43828 22.5379 5.40199C22.553 5.3657 22.5607 5.32679 22.5607 5.2875C22.5607 5.24821 22.553 5.2093 22.5379 5.17301C22.5229 5.13672 22.5008 5.10375 22.473 5.076L17.487 0.087C17.43 0.03 17.355 0 17.274 0C17.193 0 17.118 0.03 17.061 0.087L4.344 12.804C4.299 12.849 4.272 12.903 4.26 12.963L3.375 18.009C3.34582 18.1697 3.35624 18.3351 3.40538 18.4909C3.45452 18.6467 3.54088 18.7881 3.657 18.903C3.855 19.095 4.104 19.2 4.371 19.2ZM6.393 13.968L17.274 3.09L19.473 5.289L8.592 16.167L5.925 16.638L6.393 13.968ZM23.04 21.72H0.96C0.429 21.72 0 22.149 0 22.68V23.76C0 23.892 0.108 24 0.24 24H23.76C23.892 24 24 23.892 24 23.76V22.68C24 22.149 23.571 21.72 23.04 21.72Z"
-                      fill="#F05922"
-                    />
-                  </svg>
-                </a>
-                <a href="javascript:void(0)" class="text-orange">
-                  <svg
-                    width="15"
-                    height="18"
-                    viewBox="0 0 20 23"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M13.9583 2.07H14.1667C14.0521 2.07 13.9583 1.9665 13.9583 1.84V2.07H6.04167V1.84C6.04167 1.9665 5.94792 2.07 5.83333 2.07H6.04167V4.14H4.16667V1.84C4.16667 0.825125 4.91406 0 5.83333 0H14.1667C15.0859 0 15.8333 0.825125 15.8333 1.84V4.14H13.9583V2.07ZM0.833334 4.14H19.1667C19.6276 4.14 20 4.55113 20 5.06V5.98C20 6.1065 19.9063 6.21 19.7917 6.21H18.2188L17.5755 21.2463C17.5339 22.2266 16.7995 23 15.9115 23H4.08854C3.19792 23 2.46615 22.2295 2.42448 21.2463L1.78125 6.21H0.208334C0.09375 6.21 0 6.1065 0 5.98V5.06C0 4.55113 0.372396 4.14 0.833334 4.14ZM4.28906 20.93H15.7109L16.3411 6.21H3.65886L4.28906 20.93Z"
-                      fill="#FF0000"
-                    />
-                  </svg>
-                </a>
+            <div v-if="!loading">
+              <div v-if="categories.length > 0">
+                <div
+                  v-for="category in categories"
+                  :key="category.id"
+                  class="
+                    d-flex
+                    align-items-center
+                    justify-content-between
+                    py-4
+                    px-3
+                    border-bottom
+                  "
+                >
+                  <span class="fs-custom fw-bold text-capitalize">{{
+                    category.name
+                  }}</span>
+                  <div class="actions">
+                    <a
+                      href="javascript:void(0)"
+                      class="text-orange me-3 edit"
+                      @click="editCategory(category)"
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M4.371 19.2C4.431 19.2 4.491 19.194 4.551 19.185L9.597 18.3C9.657 18.288 9.714 18.261 9.756 18.216L22.473 5.499C22.5008 5.47125 22.5229 5.43828 22.5379 5.40199C22.553 5.3657 22.5607 5.32679 22.5607 5.2875C22.5607 5.24821 22.553 5.2093 22.5379 5.17301C22.5229 5.13672 22.5008 5.10375 22.473 5.076L17.487 0.087C17.43 0.03 17.355 0 17.274 0C17.193 0 17.118 0.03 17.061 0.087L4.344 12.804C4.299 12.849 4.272 12.903 4.26 12.963L3.375 18.009C3.34582 18.1697 3.35624 18.3351 3.40538 18.4909C3.45452 18.6467 3.54088 18.7881 3.657 18.903C3.855 19.095 4.104 19.2 4.371 19.2ZM6.393 13.968L17.274 3.09L19.473 5.289L8.592 16.167L5.925 16.638L6.393 13.968ZM23.04 21.72H0.96C0.429 21.72 0 22.149 0 22.68V23.76C0 23.892 0.108 24 0.24 24H23.76C23.892 24 24 23.892 24 23.76V22.68C24 22.149 23.571 21.72 23.04 21.72Z"
+                          fill="#F05922"
+                        />
+                      </svg>
+                    </a>
+                    <a
+                      href="javascript:void(0)"
+                      class="text-orange"
+                      @click="deleteCategory(category.id)"
+                    >
+                      <svg
+                        width="15"
+                        height="18"
+                        viewBox="0 0 20 23"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M13.9583 2.07H14.1667C14.0521 2.07 13.9583 1.9665 13.9583 1.84V2.07H6.04167V1.84C6.04167 1.9665 5.94792 2.07 5.83333 2.07H6.04167V4.14H4.16667V1.84C4.16667 0.825125 4.91406 0 5.83333 0H14.1667C15.0859 0 15.8333 0.825125 15.8333 1.84V4.14H13.9583V2.07ZM0.833334 4.14H19.1667C19.6276 4.14 20 4.55113 20 5.06V5.98C20 6.1065 19.9063 6.21 19.7917 6.21H18.2188L17.5755 21.2463C17.5339 22.2266 16.7995 23 15.9115 23H4.08854C3.19792 23 2.46615 22.2295 2.42448 21.2463L1.78125 6.21H0.208334C0.09375 6.21 0 6.1065 0 5.98V5.06C0 4.55113 0.372396 4.14 0.833334 4.14ZM4.28906 20.93H15.7109L16.3411 6.21H3.65886L4.28906 20.93Z"
+                          fill="#FF0000"
+                        />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="text-center fs-5 fw-500 mt-4 text-orange" v-else>
+                No Categories Found
               </div>
             </div>
+            <CategoriesLoader v-else />
           </div>
         </div>
       </MDBCol>
@@ -137,7 +156,9 @@
       class="justify-content-center border-0 p-4 pb-3"
       :close="false"
     >
-      <MDBModalTitle class="fw-bold fs-4"> Add Category </MDBModalTitle>
+      <MDBModalTitle class="fw-bold fs-4">
+        {{ editMode ? "Update Category" : "Add Category" }}
+      </MDBModalTitle>
     </MDBModalHeader>
     <MDBModalBody class="p-5 pt-3">
       <div class="custom-height">
@@ -147,18 +168,30 @@
           type="text"
           class="small category-input"
           placeholder="Category"
+          :class="errors && errors.name && 'border-danger'"
+          v-model="category.name"
         />
+        <span v-if="errors && errors.name" class="text-danger small">{{
+          errors.name[0]
+        }}</span>
       </div>
       <div class="text-end mt-3">
-          <MDBBtn @click="AddNewCategoryModal = false" class="bg-orange text-white rounded-4 fw-bold ok-btn shadow-0">Ok</MDBBtn>
+        <MDBBtn
+          @click="submitCategory()"
+          class="bg-orange text-white rounded-4 fw-bold ok-btn shadow-0"
+        >
+          Ok
+        </MDBBtn>
       </div>
     </MDBModalBody>
   </MDBModal>
+
+  <!-- Confirmation Modal -->
+  <ConfirmationModal @getData="getCategories()" :data="deletedItem" />
 </template>
 
 <script setup>
-import { ref } from "@vue/reactivity";
-import items from "../../../categories.json";
+import { reactive, ref } from "@vue/reactivity";
 import {
   MDBModal,
   MDBModalHeader,
@@ -166,16 +199,110 @@ import {
   MDBModalBody,
   MDBInput,
 } from "mdb-vue-ui-kit";
+import { createCategory, getUserCategories } from "../../../api";
+import CategoriesLoader from "../../loaders/CategoriesLoader.vue";
+import ConfirmationModal from "../../modals/ConfirmationModal.vue";
+import {
+  onBeforeUnmount,
+  onMounted,
+  onUnmounted,
+  watchEffect,
+} from "@vue/runtime-core";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
+import { POSITION, useToast } from "vue-toastification";
 
-const subCategories = ref(items.categories[0].sub_categories);
+const categories = ref([]);
+const loading = ref(true);
 const AddNewCategoryModal = ref(false);
+const category = reactive({
+  name: "",
+  id: "",
+});
+
+const deletedItem = reactive({
+  label: "",
+  id: "",
+});
+
+const addedCategory = ref("");
+const errors = ref(null);
+const editMode = ref(false);
+
+const store = useStore();
+const router = useRouter();
+const toast = useToast();
+
+const getCategories = () => {
+  getUserCategories().then(({ data }) => {
+    categories.value = data.data.data;
+    loading.value = false;
+  });
+};
+
+const editCategory = (item) => {
+  editMode.value = true;
+  AddNewCategoryModal.value = true;
+  category.name = item.name;
+  category.id = item.id;
+};
+
+watchEffect(() => {
+  if (store.state.auth) {
+    getCategories();
+    if (store.state.role === "Provider" && !store.state.shop) {
+      router.push("/add-shop");
+    } else if (store.state.role === "Client") {
+      router.push("/");
+    }
+  } else {
+    router.push("/login");
+  }
+});
+
+const submitCategory = () => {
+  const formData = new FormData();
+  formData.append("business_id", "");
+  formData.append("name", category.name);
+
+  if (category.id) {
+    formData.append("id", category.id);
+  }
+  createCategory(formData)
+    .then(({ data }) => {
+      addedCategory.value = data.category.name;
+      AddNewCategoryModal.value = false;
+      errors.value = null;
+      category.name = "";
+      category.id = "";
+      getCategories();
+
+      toast.success(
+        `${addedCategory.value} has been ${
+          editMode.value ? "updated" : "added"
+        } successfully`
+      );
+
+      setTimeout(() => {
+        addedCategory.value = "";
+      }, 2000);
+    })
+    .catch((err) => {
+      errors.value = err.response.data.errors;
+    });
+};
+
+const deleteCategory = (id) => {
+  deletedItem.id = id;
+  deletedItem.label = "category";
+};
 </script>
 
 <style scoped>
 .fs-custom {
   font-size: 0.84rem;
 }
-.ok-btn{
-    padding: .3rem 2rem;
+.ok-btn {
+  padding: 0.3rem 2rem;
 }
 </style>
