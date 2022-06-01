@@ -12,6 +12,2711 @@ module.exports = __webpack_require__(/*! regenerator-runtime */ "./node_modules/
 
 /***/ }),
 
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/build-component.js":
+/*!*******************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/build-component.js ***!
+  \*******************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "mappedPropsToVueProps": () => (/* binding */ mappedPropsToVueProps)
+/* harmony export */ });
+/* harmony import */ var _utils_bindEvents_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/bindEvents.js */ "./node_modules/@fawmi/vue-google-maps/src/utils/bindEvents.js");
+/* harmony import */ var _utils_bindProps_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/bindProps.js */ "./node_modules/@fawmi/vue-google-maps/src/utils/bindProps.js");
+/* harmony import */ var _mapElementMixin__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./mapElementMixin */ "./node_modules/@fawmi/vue-google-maps/src/components/mapElementMixin.js");
+
+
+
+
+/**
+ *
+ * @param {Object} options
+ * @param {Object} options.mappedProps - Definitions of props
+ * @param {Object} options.mappedProps.PROP.type - Value type
+ * @param {Boolean} options.mappedProps.PROP.twoWay
+ *  - Whether the prop has a corresponding PROP_changed
+ *   event
+ * @param {Boolean} options.mappedProps.PROP.noBind
+ *  - If true, do not apply the default bindProps / bindEvents.
+ * However it will still be added to the list of component props
+ * @param {Object} options.props - Regular Vue-style props.
+ *  Note: must be in the Object form because it will be
+ *  merged with the `mappedProps`
+ *
+ * @param {Object} options.events - Google Maps API events
+ *  that are not bound to a corresponding prop
+ * @param {String} options.name - e.g. `polyline`
+ * @param {=> String} options.ctr - constructor, e.g.
+ *  `google.maps.Polyline`. However, since this is not
+ *  generally available during library load, this becomes
+ *  a function instead, e.g. () => google.maps.Polyline
+ *  which will be called only after the API has been loaded
+ * @param {(MappedProps, OtherVueProps) => Array} options.ctrArgs -
+ *   If the constructor in `ctr` needs to be called with
+ *   arguments other than a single `options` object, e.g. for
+ *   GroundOverlay, we call `new GroundOverlay(url, bounds, options)`
+ *   then pass in a function that returns the argument list as an array
+ *
+ * Otherwise, the constructor will be called with an `options` object,
+ *   with property and values merged from:
+ *
+ *   1. the `options` property, if any
+ *   2. a `map` property with the Google Maps
+ *   3. all the properties passed to the component in `mappedProps`
+ * @param {Object => Any} options.beforeCreate -
+ *  Hook to modify the options passed to the initializer
+ * @param {(options.ctr, Object) => Any} options.afterCreate -
+ *  Hook called when
+ *
+ */
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(options) {
+  const {
+    mappedProps,
+    name,
+    ctr,
+    ctrArgs,
+    events,
+    beforeCreate,
+    afterCreate,
+    props,
+    ...rest
+  } = options
+
+  const promiseName = `$${name}Promise`
+  const instanceName = `$${name}Object`
+
+  assert(!(rest.props instanceof Array), '`props` should be an object, not Array')
+
+  return {
+    ...(typeof GENERATE_DOC !== 'undefined' ? { $vgmOptions: options } : {}),
+    mixins: [_mapElementMixin__WEBPACK_IMPORTED_MODULE_2__["default"]],
+    props: {
+      ...props,
+      ...mappedPropsToVueProps(mappedProps),
+    },
+    render() {
+      return ''
+    },
+    provide() {
+      const promise = this.$mapPromise
+        .then((map) => {
+          // Infowindow needs this to be immediately available
+          this.$map = map
+
+          // Initialize the maps with the given options
+          const options = {
+            ...this.options,
+            map,
+            ...(0,_utils_bindProps_js__WEBPACK_IMPORTED_MODULE_1__.getPropsValues)(this, mappedProps),
+          }
+          delete options.options // delete the extra options
+
+          if (beforeCreate) {
+            const result = beforeCreate.bind(this)(options)
+
+            if (result instanceof Promise) {
+              return result.then(() => ({ options }))
+            }
+          }
+          return { options }
+        })
+        .then(({ options }) => {
+          const ConstructorObject = ctr()
+          // https://stackoverflow.com/questions/1606797/use-of-apply-with-new-operator-is-this-possible
+          this[instanceName] = ctrArgs
+            ? new (Function.prototype.bind.call(
+                ConstructorObject,
+                null,
+                ...ctrArgs(options, (0,_utils_bindProps_js__WEBPACK_IMPORTED_MODULE_1__.getPropsValues)(this, props || {}))
+              ))()
+            : new ConstructorObject(options)
+
+          ;(0,_utils_bindProps_js__WEBPACK_IMPORTED_MODULE_1__.bindProps)(this, this[instanceName], mappedProps)
+          ;(0,_utils_bindEvents_js__WEBPACK_IMPORTED_MODULE_0__["default"])(this, this[instanceName], events)
+
+          if (afterCreate) {
+            afterCreate.bind(this)(this[instanceName])
+          }
+          return this[instanceName]
+        })
+      this[promiseName] = promise
+      return { [promiseName]: promise }
+    },
+    unmounted() {
+      // Note: not all Google Maps components support maps
+      if (this[instanceName] && this[instanceName].setMap) {
+        this[instanceName].setMap(null)
+      }
+    },
+    ...rest,
+  }
+}
+
+function assert(v, message) {
+  if (!v) throw new Error(message)
+}
+
+/**
+ * Strips out the extraneous properties we have in our
+ * props definitions
+ * @param {Object} props
+ */
+function mappedPropsToVueProps(mappedProps) {
+  return Object.entries(mappedProps)
+    .map(([key, prop]) => {
+      const value = {}
+
+      if ('type' in prop) value.type = prop.type
+      if ('default' in prop) value.default = prop.default
+      if ('required' in prop) value.required = prop.required
+
+      return [key, value]
+    })
+    .reduce((acc, [key, val]) => {
+      acc[key] = val
+      return acc
+    }, {})
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/circle.js":
+/*!**********************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/circle.js ***!
+  \**********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _build_component__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./build-component */ "./node_modules/@fawmi/vue-google-maps/src/components/build-component.js");
+
+
+const props = {
+  center: {
+    type: Object,
+    twoWay: true,
+    required: true,
+  },
+  radius: {
+    type: Number,
+    twoWay: true,
+  },
+  draggable: {
+    type: Boolean,
+    default: false,
+  },
+  editable: {
+    type: Boolean,
+    default: false,
+  },
+  options: {
+    type: Object,
+    twoWay: false,
+  },
+}
+
+const events = [
+  'click',
+  'dblclick',
+  'drag',
+  'dragend',
+  'dragstart',
+  'mousedown',
+  'mousemove',
+  'mouseout',
+  'mouseover',
+  'mouseup',
+  'rightclick',
+]
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_build_component__WEBPACK_IMPORTED_MODULE_0__["default"])({
+  mappedProps: props,
+  name: 'circle',
+  ctr: () => google.maps.Circle,
+  events,
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/heatmap.js":
+/*!***********************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/heatmap.js ***!
+  \***********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _build_component_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./build-component.js */ "./node_modules/@fawmi/vue-google-maps/src/components/build-component.js");
+
+
+const props = {
+  options: {
+    type: Object,
+    twoWay: false,
+    default: () => {
+    },
+  },
+  data: {
+    type: Array,
+    twoWay: true
+  },
+}
+
+const events = [];
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_build_component_js__WEBPACK_IMPORTED_MODULE_0__["default"])({
+  mappedProps: props,
+  name: 'heatmap',
+  ctr: () => google.maps.visualization.HeatmapLayer,
+  events,
+}));
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/mapElementMixin.js":
+/*!*******************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/mapElementMixin.js ***!
+  \*******************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/**
+ * @class MapElementMixin
+ *
+ * Extends components to include the following fields:
+ *
+ * @property $map        The Google map (valid only after the promise returns)
+ *
+ *
+ * */
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  inject: {
+    $mapPromise: { default: 'abcdef' },
+  },
+
+  provide() {
+    // Note: although this mixin is not "providing" anything,
+    // components' expect the `$map` property to be present on the component.
+    // In order for that to happen, this mixin must intercept the $mapPromise
+    // .then(() =>) first before its component does so.
+    //
+    // Since a provide() on a mixin is executed before a provide() on the
+    // component, putting this code in provide() ensures that the $map is
+    // already set by the time the
+    // component's provide() is called.
+    this.$mapPromise.then((map) => {
+      this.$map = map
+    })
+
+    return {}
+  },
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/polygon.js":
+/*!***********************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/polygon.js ***!
+  \***********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _build_component_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./build-component.js */ "./node_modules/@fawmi/vue-google-maps/src/components/build-component.js");
+
+
+const props = {
+  draggable: {
+    type: Boolean,
+  },
+  editable: {
+    type: Boolean,
+  },
+  options: {
+    type: Object,
+  },
+  path: {
+    type: Array,
+    twoWay: true,
+    noBind: true,
+  },
+  paths: {
+    type: Array,
+    twoWay: true,
+    noBind: true,
+  },
+}
+
+const events = [
+  'click',
+  'dblclick',
+  'drag',
+  'dragend',
+  'dragstart',
+  'mousedown',
+  'mousemove',
+  'mouseout',
+  'mouseover',
+  'mouseup',
+  'rightclick',
+]
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_build_component_js__WEBPACK_IMPORTED_MODULE_0__["default"])({
+  props: {
+    deepWatch: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  events,
+  mappedProps: props,
+  name: 'polygon',
+  ctr: () => google.maps.Polygon,
+
+  beforeCreate(options) {
+    if (!options.path) delete options.path
+    if (!options.paths) delete options.paths
+  },
+
+  afterCreate(inst) {
+    let clearEvents = () => {}
+
+    // Watch paths, on our own, because we do not want to set either when it is
+    // empty
+    this.$watch(
+      'paths',
+      (paths) => {
+        if (paths) {
+          clearEvents()
+
+          inst.setPaths(paths)
+
+          const updatePaths = () => {
+            this.$emit('paths_changed', inst.getPaths())
+          }
+          const eventListeners = []
+
+          const mvcArray = inst.getPaths()
+          for (let i = 0; i < mvcArray.getLength(); i++) {
+            let mvcPath = mvcArray.getAt(i)
+            eventListeners.push([mvcPath, mvcPath.addListener('insert_at', updatePaths)])
+            eventListeners.push([mvcPath, mvcPath.addListener('remove_at', updatePaths)])
+            eventListeners.push([mvcPath, mvcPath.addListener('set_at', updatePaths)])
+          }
+          eventListeners.push([mvcArray, mvcArray.addListener('insert_at', updatePaths)])
+          eventListeners.push([mvcArray, mvcArray.addListener('remove_at', updatePaths)])
+          eventListeners.push([mvcArray, mvcArray.addListener('set_at', updatePaths)])
+
+          clearEvents = () => {
+            eventListeners.map((
+              [obj, listenerHandle] // eslint-disable-line no-unused-vars
+            ) => google.maps.event.removeListener(listenerHandle))
+          }
+        }
+      },
+      {
+        deep: this.deepWatch,
+        immediate: true,
+      }
+    )
+
+    this.$watch(
+      'path',
+      (path) => {
+        if (path) {
+          clearEvents()
+
+          inst.setPaths(path)
+
+          const mvcPath = inst.getPath()
+          const eventListeners = []
+
+          const updatePaths = () => {
+            this.$emit('path_changed', inst.getPath())
+          }
+
+          eventListeners.push([mvcPath, mvcPath.addListener('insert_at', updatePaths)])
+          eventListeners.push([mvcPath, mvcPath.addListener('remove_at', updatePaths)])
+          eventListeners.push([mvcPath, mvcPath.addListener('set_at', updatePaths)])
+
+          clearEvents = () => {
+            eventListeners.map((
+              [obj, listenerHandle] // eslint-disable-line no-unused-vars
+            ) => google.maps.event.removeListener(listenerHandle))
+          }
+        }
+      },
+      {
+        deep: this.deepWatch,
+        immediate: true,
+      }
+    )
+  },
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/polyline.js":
+/*!************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/polyline.js ***!
+  \************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _build_component_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./build-component.js */ "./node_modules/@fawmi/vue-google-maps/src/components/build-component.js");
+
+
+const props = {
+  draggable: {
+    type: Boolean,
+  },
+  editable: {
+    type: Boolean,
+  },
+  options: {
+    twoWay: false,
+    type: Object,
+  },
+  path: {
+    type: Array,
+    twoWay: true,
+  },
+}
+
+const events = [
+  'click',
+  'dblclick',
+  'drag',
+  'dragend',
+  'dragstart',
+  'mousedown',
+  'mousemove',
+  'mouseout',
+  'mouseover',
+  'mouseup',
+  'rightclick',
+]
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_build_component_js__WEBPACK_IMPORTED_MODULE_0__["default"])({
+  mappedProps: props,
+  props: {
+    deepWatch: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  events,
+
+  name: 'polyline',
+  ctr: () => google.maps.Polyline,
+
+  afterCreate() {
+    let clearEvents = () => {}
+
+    this.$watch(
+      'path',
+      (path) => {
+        if (path) {
+          clearEvents()
+
+          this.$polylineObject.setPath(path)
+
+          const mvcPath = this.$polylineObject.getPath()
+          const eventListeners = []
+
+          const updatePaths = () => {
+            this.$emit('path_changed', this.$polylineObject.getPath())
+          }
+
+          eventListeners.push([mvcPath, mvcPath.addListener('insert_at', updatePaths)])
+          eventListeners.push([mvcPath, mvcPath.addListener('remove_at', updatePaths)])
+          eventListeners.push([mvcPath, mvcPath.addListener('set_at', updatePaths)])
+
+          clearEvents = () => {
+            eventListeners.map((
+              [obj, listenerHandle] // eslint-disable-line no-unused-vars
+            ) => google.maps.event.removeListener(listenerHandle))
+          }
+        }
+      },
+      {
+        deep: this.deepWatch,
+        immediate: true,
+      }
+    )
+  },
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/rectangle.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/rectangle.js ***!
+  \*************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _build_component_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./build-component.js */ "./node_modules/@fawmi/vue-google-maps/src/components/build-component.js");
+
+
+const props = {
+  bounds: {
+    type: Object,
+    twoWay: true,
+  },
+  draggable: {
+    type: Boolean,
+    default: false,
+  },
+  editable: {
+    type: Boolean,
+    default: false,
+  },
+  options: {
+    type: Object,
+    twoWay: false,
+  },
+}
+
+const events = [
+  'click',
+  'dblclick',
+  'drag',
+  'dragend',
+  'dragstart',
+  'mousedown',
+  'mousemove',
+  'mouseout',
+  'mouseover',
+  'mouseup',
+  'rightclick',
+]
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_build_component_js__WEBPACK_IMPORTED_MODULE_0__["default"])({
+  mappedProps: props,
+  name: 'rectangle',
+  ctr: () => google.maps.Rectangle,
+  events,
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/load-google-maps.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/load-google-maps.js ***!
+  \*********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "loadGMapApi": () => (/* binding */ loadGMapApi)
+/* harmony export */ });
+/* harmony import */ var _utils_env__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils/env */ "./node_modules/@fawmi/vue-google-maps/src/utils/env.js");
+/* harmony import */ var _utils_create_map_script__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utils/create-map-script */ "./node_modules/@fawmi/vue-google-maps/src/utils/create-map-script.js");
+
+
+
+let isApiSetUp = false
+function loadGMapApi (options) {
+
+  if (_utils_env__WEBPACK_IMPORTED_MODULE_0__.Env.isServer()) {
+    return;
+  }
+
+  if (!isApiSetUp) {
+    isApiSetUp = true
+    const googleMapScript = (0,_utils_create_map_script__WEBPACK_IMPORTED_MODULE_1__.createMapScript)(options);
+    document.head.appendChild(googleMapScript)
+  } else {
+    throw new Error('You already started the loading of google maps')
+  }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/main.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/main.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Autocomplete": () => (/* reexport safe */ _components_autocomplete_vue__WEBPACK_IMPORTED_MODULE_12__["default"]),
+/* harmony export */   "Circle": () => (/* reexport safe */ _components_circle__WEBPACK_IMPORTED_MODULE_5__["default"]),
+/* harmony export */   "GMapCluster": () => (/* reexport safe */ _components_cluster_vue__WEBPACK_IMPORTED_MODULE_8__["default"]),
+/* harmony export */   "Heatmap": () => (/* reexport safe */ _components_heatmap__WEBPACK_IMPORTED_MODULE_11__["default"]),
+/* harmony export */   "InfoWindow": () => (/* reexport safe */ _components_infoWindow_vue__WEBPACK_IMPORTED_MODULE_9__["default"]),
+/* harmony export */   "Map": () => (/* reexport safe */ _components_map_vue__WEBPACK_IMPORTED_MODULE_10__["default"]),
+/* harmony export */   "MapElementMixin": () => (/* reexport safe */ _components_mapElementMixin__WEBPACK_IMPORTED_MODULE_13__["default"]),
+/* harmony export */   "Marker": () => (/* reexport safe */ _components_marker_vue__WEBPACK_IMPORTED_MODULE_7__["default"]),
+/* harmony export */   "MountableMixin": () => (/* reexport safe */ _utils_mountableMixin__WEBPACK_IMPORTED_MODULE_15__["default"]),
+/* harmony export */   "Polygon": () => (/* reexport safe */ _components_polygon__WEBPACK_IMPORTED_MODULE_4__["default"]),
+/* harmony export */   "Polyline": () => (/* reexport safe */ _components_polyline__WEBPACK_IMPORTED_MODULE_3__["default"]),
+/* harmony export */   "Rectangle": () => (/* reexport safe */ _components_rectangle__WEBPACK_IMPORTED_MODULE_6__["default"]),
+/* harmony export */   "buildComponent": () => (/* reexport safe */ _components_build_component__WEBPACK_IMPORTED_MODULE_14__["default"]),
+/* harmony export */   "default": () => (/* binding */ install),
+/* harmony export */   "loadGMapApi": () => (/* reexport safe */ _load_google_maps__WEBPACK_IMPORTED_MODULE_1__.loadGMapApi)
+/* harmony export */ });
+/* harmony import */ var _utils_lazyValue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils/lazyValue */ "./node_modules/@fawmi/vue-google-maps/src/utils/lazyValue.js");
+/* harmony import */ var _load_google_maps__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./load-google-maps */ "./node_modules/@fawmi/vue-google-maps/src/load-google-maps.js");
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+/* harmony import */ var _components_polyline__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/polyline */ "./node_modules/@fawmi/vue-google-maps/src/components/polyline.js");
+/* harmony import */ var _components_polygon__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/polygon */ "./node_modules/@fawmi/vue-google-maps/src/components/polygon.js");
+/* harmony import */ var _components_circle__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/circle */ "./node_modules/@fawmi/vue-google-maps/src/components/circle.js");
+/* harmony import */ var _components_rectangle__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/rectangle */ "./node_modules/@fawmi/vue-google-maps/src/components/rectangle.js");
+/* harmony import */ var _components_marker_vue__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/marker.vue */ "./node_modules/@fawmi/vue-google-maps/src/components/marker.vue");
+/* harmony import */ var _components_cluster_vue__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/cluster.vue */ "./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue");
+/* harmony import */ var _components_infoWindow_vue__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/infoWindow.vue */ "./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue");
+/* harmony import */ var _components_map_vue__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/map.vue */ "./node_modules/@fawmi/vue-google-maps/src/components/map.vue");
+/* harmony import */ var _components_heatmap__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./components/heatmap */ "./node_modules/@fawmi/vue-google-maps/src/components/heatmap.js");
+/* harmony import */ var _components_autocomplete_vue__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./components/autocomplete.vue */ "./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue");
+/* harmony import */ var _components_mapElementMixin__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./components/mapElementMixin */ "./node_modules/@fawmi/vue-google-maps/src/components/mapElementMixin.js");
+/* harmony import */ var _components_build_component__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./components/build-component */ "./node_modules/@fawmi/vue-google-maps/src/components/build-component.js");
+/* harmony import */ var _utils_mountableMixin__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./utils/mountableMixin */ "./node_modules/@fawmi/vue-google-maps/src/utils/mountableMixin.js");
+/* harmony import */ var _utils_env__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./utils/env */ "./node_modules/@fawmi/vue-google-maps/src/utils/env.js");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+let GMapApi = null;
+
+
+
+function install(Vue, options) {
+  options = {
+    installComponents: true,
+    autobindAllEvents: false,
+    ...options,
+  }
+
+  GMapApi = (0,vue__WEBPACK_IMPORTED_MODULE_2__.createApp)({
+    data: function () {
+      return { gmapApi: null }
+    },
+  })
+
+  const defaultResizeBus = (0,vue__WEBPACK_IMPORTED_MODULE_2__.createApp)()
+
+  // Use a lazy to only load the API when
+  // a VGM component is loaded
+  let gmapApiPromiseLazy = makeGMapApiPromiseLazy(options)
+
+  Vue.mixin({
+    created() {
+      this.$gmapDefaultResizeBus = defaultResizeBus
+      this.$gmapOptions = options
+      this.$gmapApiPromiseLazy = gmapApiPromiseLazy
+    },
+  })
+  Vue.$gmapDefaultResizeBus = defaultResizeBus
+  Vue.$gmapApiPromiseLazy = gmapApiPromiseLazy
+
+  if (options.installComponents) {
+    Vue.component('GMapMap', _components_map_vue__WEBPACK_IMPORTED_MODULE_10__["default"])
+    Vue.component('GMapMarker', _components_marker_vue__WEBPACK_IMPORTED_MODULE_7__["default"])
+    Vue.component('GMapInfoWindow', _components_infoWindow_vue__WEBPACK_IMPORTED_MODULE_9__["default"])
+    Vue.component('GMapCluster', _components_cluster_vue__WEBPACK_IMPORTED_MODULE_8__["default"])
+    Vue.component('GMapPolyline', _components_polyline__WEBPACK_IMPORTED_MODULE_3__["default"])
+    Vue.component('GMapPolygon', _components_polygon__WEBPACK_IMPORTED_MODULE_4__["default"])
+    Vue.component('GMapCircle', _components_circle__WEBPACK_IMPORTED_MODULE_5__["default"])
+    Vue.component('GMapRectangle', _components_rectangle__WEBPACK_IMPORTED_MODULE_6__["default"])
+    Vue.component('GMapAutocomplete', _components_autocomplete_vue__WEBPACK_IMPORTED_MODULE_12__["default"])
+    Vue.component('GMapHeatmap', _components_heatmap__WEBPACK_IMPORTED_MODULE_11__["default"])
+  }
+}
+
+function makeGMapApiPromiseLazy(options) {
+  // Things to do once the API is loaded
+  function onApiLoaded() {
+    GMapApi.gmapApi = {}
+    return window.google
+  }
+
+  if (options.load) {
+    // If library should load the API
+    return (0,_utils_lazyValue__WEBPACK_IMPORTED_MODULE_0__["default"])(() => {
+      // Load the
+      // This will only be evaluated once
+      if (_utils_env__WEBPACK_IMPORTED_MODULE_16__.Env.isServer()) {
+        return new Promise(() => {}).then(onApiLoaded)
+      } else {
+        return new Promise((resolve, reject) => {
+          try {
+            window['vueGoogleMapsInit'] = resolve
+            ;(0,_load_google_maps__WEBPACK_IMPORTED_MODULE_1__.loadGMapApi)(options.load)
+          } catch (err) {
+            reject(err)
+          }
+        }).then(onApiLoaded)
+      }
+    })
+  } else {
+    // If library should not handle API, provide
+    // end-users with the global `vueGoogleMapsInit: () => undefined`
+    // when the Google Maps API has been loaded
+    const promise = new Promise((resolve) => {
+      if (_utils_env__WEBPACK_IMPORTED_MODULE_16__.Env.isServer()) {
+        return
+      }
+      window['vueGoogleMapsInit'] = resolve
+    }).then(onApiLoaded)
+
+    return (0,_utils_lazyValue__WEBPACK_IMPORTED_MODULE_0__["default"])(() => promise)
+  }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/utils/TwoWayBindingWrapper.js":
+/*!*******************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/utils/TwoWayBindingWrapper.js ***!
+  \*******************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ TwoWayBindingWrapper)
+/* harmony export */ });
+/**
+ * When you have two-way bindings, but the actual bound value will not equal
+ * the value you initially passed in, then to avoid an infinite loop you
+ * need to increment a counter every time you pass in a value, decrement the
+ * same counter every time the bound value changed, but only bubble up
+ * the event when the counter is zero.
+ *
+Example:
+
+Let's say DrawingRecognitionCanvas is a deep-learning backed canvas
+that, when given the name of an object (e.g. 'dog'), draws a dog.
+But whenever the drawing on it changes, it also sends back its interpretation
+of the image by way of the @newObjectRecognized event.
+
+<input
+  type="text"
+  placeholder="an object, e.g. Dog, Cat, Frog"
+  v-model="identifiedObject" />
+<DrawingRecognitionCanvas
+  :object="identifiedObject"
+  @newObjectRecognized="identifiedObject = $event"
+  />
+
+new TwoWayBindingWrapper((increment, decrement, shouldUpdate) => {
+  this.$watch('identifiedObject', () => {
+    // new object passed in
+    increment()
+  })
+  this.$deepLearningBackend.on('drawingChanged', () => {
+    recognizeObject(this.$deepLearningBackend)
+      .then((object) => {
+        decrement()
+        if (shouldUpdate()) {
+          this.$emit('newObjectRecognized', object.name)
+        }
+      })
+  })
+})
+ */
+function TwoWayBindingWrapper(fn) {
+  let counter = 0
+
+  fn(
+    () => {
+      counter += 1
+    },
+    () => {
+      counter = Math.max(0, counter - 1)
+    },
+    () => counter === 0
+  )
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/utils/WatchPrimitiveProperties.js":
+/*!***********************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/utils/WatchPrimitiveProperties.js ***!
+  \***********************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ WatchPrimitiveProperties)
+/* harmony export */ });
+/**
+ * Watch the individual properties of a PoD object, instead of the object
+ * per se. This is different from a deep watch where both the reference
+ * and the individual values are watched.
+ *
+ * In effect, it throttles the multiple $watch to execute at most once per tick.
+ */
+function WatchPrimitiveProperties(
+  vueInst,
+  propertiesToTrack,
+  handler,
+  immediate = false
+) {
+  let isHandled = false
+
+  function requestHandle() {
+    if (!isHandled) {
+      isHandled = true
+      vueInst.$nextTick(() => {
+        isHandled = false
+        handler()
+      })
+    }
+  }
+
+  for (let prop of propertiesToTrack) {
+    vueInst.$watch(prop, requestHandle, { immediate })
+  }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/utils/bindEvents.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/utils/bindEvents.js ***!
+  \*********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((vueInst, googleMapsInst, events) => {
+  for (let eventName of events) {
+    const propName = `on${eventName.charAt(0).toUpperCase()}${eventName.slice(1)}`.replace(/[-_]+(.)?/g, (_, c) => c ? c.toUpperCase() : '');
+
+    if (vueInst.$props[propName] || vueInst.$attrs[propName]) {
+      googleMapsInst.addListener(eventName, (ev) => {
+        vueInst.$emit(eventName, ev)
+      })
+    } else if (vueInst.$gmapOptions.autobindAllEvents || vueInst.$attrs[eventName]) {
+      googleMapsInst.addListener(eventName, (ev) => {
+        vueInst.$emit(eventName, ev)
+      })
+    }
+  }
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/utils/bindProps.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/utils/bindProps.js ***!
+  \********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "bindProps": () => (/* binding */ bindProps),
+/* harmony export */   "getPropsValues": () => (/* binding */ getPropsValues)
+/* harmony export */ });
+/* harmony import */ var _utils_WatchPrimitiveProperties__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/WatchPrimitiveProperties */ "./node_modules/@fawmi/vue-google-maps/src/utils/WatchPrimitiveProperties.js");
+/* harmony import */ var _string__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./string */ "./node_modules/@fawmi/vue-google-maps/src/utils/string.js");
+
+
+
+function getPropsValues(vueInst, props) {
+  return Object.keys(props).reduce((acc, prop) => {
+    if (vueInst[prop] !== undefined) {
+      acc[prop] = vueInst[prop]
+    }
+    return acc
+  }, {})
+}
+
+/**
+ * Binds the properties defined in props to the google maps instance.
+ * If the prop is an Object type, and we wish to track the properties
+ * of the object (e.g. the lat and lng of a LatLng), then we do a deep
+ * watch. For deep watch, we also prevent the _changed event from being
+ * $emitted if the data source was external.
+ */
+function bindProps(vueInst, googleMapsInst, props) {
+  for (let attribute in props) {
+    let { twoWay, type, trackProperties, noBind } = props[attribute]
+
+    if (noBind) continue
+
+    const setMethodName = 'set' + _string__WEBPACK_IMPORTED_MODULE_1__.Str.capitalizeFirstLetter(attribute)
+    const getMethodName = 'get' + _string__WEBPACK_IMPORTED_MODULE_1__.Str.capitalizeFirstLetter(attribute)
+    const eventName = attribute.toLowerCase() + '_changed'
+    const initialValue = vueInst[attribute]
+
+    if (typeof googleMapsInst[setMethodName] === 'undefined') {
+      throw new Error(
+        `${setMethodName} is not a method of (the Maps object corresponding to) ${vueInst.$options._componentTag}`
+      )
+    }
+
+    // We need to avoid an endless
+    // propChanged -> event $emitted -> propChanged -> event $emitted loop
+    // although this may really be the user's responsibility
+    if (type !== Object || !trackProperties) {
+      // Track the object deeply
+      vueInst.$watch(attribute,
+        () => {
+          const attributeValue = vueInst[attribute]
+
+          googleMapsInst[setMethodName](attributeValue)
+        },
+        {
+          immediate: typeof initialValue !== 'undefined',
+          deep: type === Object,
+        }
+      )
+    } else {
+      (0,_utils_WatchPrimitiveProperties__WEBPACK_IMPORTED_MODULE_0__["default"])(
+        vueInst,
+        trackProperties.map((prop) => `${attribute}.${prop}`),
+        () => {
+          googleMapsInst[setMethodName](vueInst[attribute])
+        },
+        vueInst[attribute] !== undefined
+      )
+    }
+
+    if (twoWay && (vueInst.$gmapOptions.autobindAllEvents || vueInst.$attrs[eventName])) {
+      googleMapsInst.addListener(eventName, () => {
+        // eslint-disable-line no-unused-vars
+        vueInst.$emit(eventName, googleMapsInst[getMethodName]())
+      })
+    }
+  }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/utils/create-map-script.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/utils/create-map-script.js ***!
+  \****************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "createMapScript": () => (/* binding */ createMapScript)
+/* harmony export */ });
+function createMapScript(options) {
+  const googleMapScript = document.createElement('SCRIPT')
+  if (typeof options !== 'object') {
+    throw new Error('options should  be an object')
+  }
+
+  // libraries
+  /* eslint-disable no-prototype-builtins */
+  if (Array.prototype.isPrototypeOf(options.libraries)) {
+    options.libraries = options.libraries.join(',')
+  }
+  options['callback'] = 'vueGoogleMapsInit'
+  let baseUrl = 'https://maps.googleapis.com/maps/api/js?'
+
+  let url =
+    baseUrl +
+    Object.keys(options)
+      .map((key) => encodeURIComponent(key) + '=' + encodeURIComponent(options[key])).join('&')
+
+  googleMapScript.setAttribute('src', url)
+  googleMapScript.setAttribute('async', '')
+  googleMapScript.setAttribute('defer', '')
+
+  return googleMapScript;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/utils/env.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/utils/env.js ***!
+  \**************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Env": () => (/* binding */ Env)
+/* harmony export */ });
+class Env {
+  static isServer() {
+    return typeof document === 'undefined';
+  }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/utils/lazyValue.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/utils/lazyValue.js ***!
+  \********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+// lazy-value by sindresorhus
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (fn => {
+  let called = false;
+  let result;
+
+  return () => {
+    if (!called) {
+      called = true;
+      result = fn();
+    }
+
+    return result;
+  };
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/utils/mountableMixin.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/utils/mountableMixin.js ***!
+  \*************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/*
+Mixin for objects that are mounted by Google Maps
+Javascript API.
+
+These are objects that are sensitive to element resize
+operations so it exposes a property which accepts a bus
+
+*/
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  props: ['resizeBus'],
+
+  data() {
+    return {
+      _actualResizeBus: null,
+    }
+  },
+
+  created() {
+    if (typeof this.resizeBus === 'undefined') {
+      this.$data._actualResizeBus = this.$gmapDefaultResizeBus
+    } else {
+      this.$data._actualResizeBus = this.resizeBus
+    }
+  },
+
+  methods: {
+    _resizeCallback() {
+      this.resize()
+    },
+    isFunction(functionToCheck) {
+      return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]';
+    },
+    _delayedResizeCallback() {
+      this.$nextTick(() => this._resizeCallback())
+    },
+  },
+
+  watch: {
+    resizeBus(newVal) {
+      // eslint-disable-line no-unused-vars
+      this.$data._actualResizeBus = newVal
+    },
+    '$data._actualResizeBus'(newVal, oldVal) {
+      if (oldVal) {
+        oldVal.$off('resize', this._delayedResizeCallback)
+      }
+      if (newVal) {
+        //  newVal.$on('resize', this._delayedResizeCallback)
+      }
+    },
+  },
+
+  unmounted() {
+    if (this.$data._actualResizeBus && this.isFunction(this.$data._actualResizeBus.$off)) {
+      this.$data._actualResizeBus.$off('resize', this._delayedResizeCallback)
+    }
+  },
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/utils/simulateArrowDown.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/utils/simulateArrowDown.js ***!
+  \****************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+// This piece of code was orignally written by amirnissim and can be seen here
+// http://stackoverflow.com/a/11703018/2694653
+// This has been ported to Vanilla.js by GuillaumeLeclerc
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((input) => {
+  const _addEventListener = input.addEventListener ? input.addEventListener : input.attachEvent
+
+  function addEventListenerWrapper(type, listener) {
+    // Simulate a 'down arrow' keypress on hitting 'return' when no pac suggestion is selected,
+    // and then trigger the original listener.
+    if (type === 'keydown') {
+      const origListener = listener
+      listener = function (event) {
+        const suggestionSelected = document.getElementsByClassName('pac-item-selected').length > 0
+        if (event.which === 13 && !suggestionSelected) {
+          const simulatedEvent = document.createEvent('Event')
+          simulatedEvent.keyCode = 40
+          simulatedEvent.which = 40
+          origListener.apply(input, [simulatedEvent])
+        }
+        origListener.apply(input, [event])
+      }
+    }
+    _addEventListener.apply(input, [type, listener])
+  }
+
+  input.addEventListener = addEventListenerWrapper
+  input.attachEvent = addEventListenerWrapper
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/utils/string.js":
+/*!*****************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/utils/string.js ***!
+  \*****************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Str": () => (/* binding */ Str)
+/* harmony export */ });
+class Str {
+  static capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1)
+  }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@googlemaps/markerclustererplus/dist/index.esm.js":
+/*!************************************************************************!*\
+  !*** ./node_modules/@googlemaps/markerclustererplus/dist/index.esm.js ***!
+  \************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ MarkerClusterer)
+/* harmony export */ });
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise */
+
+var extendStatics = function(d, b) {
+    extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return extendStatics(d, b);
+};
+
+function __extends(d, b) {
+    extendStatics(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+
+var __assign = function() {
+    __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+
+/**
+ * Copyright 2019 Google LLC. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/**
+ * Extends an object's prototype by another's.
+ *
+ * @param type1 The Type to be extended.
+ * @param type2 The Type to extend with.
+ * @ignore
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extend(type1, type2) {
+    // eslint-disable-next-line prefer-const
+    for (var property in type2.prototype) {
+        type1.prototype[property] = type2.prototype[property];
+    }
+}
+/**
+ * @ignore
+ */
+var OverlayViewSafe = /** @class */ (function () {
+    function OverlayViewSafe() {
+        // MarkerClusterer implements google.maps.OverlayView interface. We use the
+        // extend function to extend MarkerClusterer with google.maps.OverlayView
+        // because it might not always be available when the code is defined so we
+        // look for it at the last possible moment. If it doesn't exist now then
+        // there is no point going ahead :)
+        extend(OverlayViewSafe, google.maps.OverlayView);
+    }
+    return OverlayViewSafe;
+}());
+
+/**
+ * Copyright 2019 Google LLC. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/**
+ *
+ * @hidden
+ */
+function toCssText(styles) {
+    return Object.keys(styles)
+        .reduce(function (acc, key) {
+        if (styles[key]) {
+            acc.push(key + ":" + styles[key]);
+        }
+        return acc;
+    }, [])
+        .join(";");
+}
+/**
+ *
+ * @hidden
+ */
+function coercePixels(pixels) {
+    return pixels ? pixels + "px" : undefined;
+}
+/**
+ * A cluster icon.
+ */
+var ClusterIcon = /** @class */ (function (_super) {
+    __extends(ClusterIcon, _super);
+    /**
+     * @param cluster_ The cluster with which the icon is to be associated.
+     * @param styles_ An array of {@link ClusterIconStyle} defining the cluster icons
+     *  to use for various cluster sizes.
+     */
+    function ClusterIcon(cluster_, styles_) {
+        var _this = _super.call(this) || this;
+        _this.cluster_ = cluster_;
+        _this.styles_ = styles_;
+        _this.center_ = null;
+        _this.div_ = null;
+        _this.sums_ = null;
+        _this.visible_ = false;
+        _this.style = null;
+        _this.setMap(cluster_.getMap()); // Note: this causes onAdd to be called
+        return _this;
+    }
+    /**
+     * Adds the icon to the DOM.
+     */
+    ClusterIcon.prototype.onAdd = function () {
+        var _this = this;
+        var cMouseDownInCluster;
+        var cDraggingMapByCluster;
+        var mc = this.cluster_.getMarkerClusterer();
+        var _a = google.maps.version.split("."), major = _a[0], minor = _a[1];
+        var gmVersion = parseInt(major, 10) * 100 + parseInt(minor, 10);
+        this.div_ = document.createElement("div");
+        if (this.visible_) {
+            this.show();
+        }
+        this.getPanes().overlayMouseTarget.appendChild(this.div_);
+        // Fix for Issue 157
+        this.boundsChangedListener_ = google.maps.event.addListener(this.getMap(), "bounds_changed", function () {
+            cDraggingMapByCluster = cMouseDownInCluster;
+        });
+        google.maps.event.addDomListener(this.div_, "mousedown", function () {
+            cMouseDownInCluster = true;
+            cDraggingMapByCluster = false;
+        });
+        google.maps.event.addDomListener(this.div_, "contextmenu", function () {
+            /**
+             * This event is fired when a cluster marker contextmenu is requested.
+             * @name MarkerClusterer#mouseover
+             * @param {Cluster} c The cluster that the contextmenu is requested.
+             * @event
+             */
+            google.maps.event.trigger(mc, "contextmenu", _this.cluster_);
+        });
+        // March 1, 2018: Fix for this 3.32 exp bug, https://issuetracker.google.com/issues/73571522
+        // But it doesn't work with earlier releases so do a version check.
+        if (gmVersion >= 332) {
+            // Ugly version-dependent code
+            google.maps.event.addDomListener(this.div_, "touchstart", function (e) {
+                e.stopPropagation();
+            });
+        }
+        google.maps.event.addDomListener(this.div_, "click", function (e) {
+            cMouseDownInCluster = false;
+            if (!cDraggingMapByCluster) {
+                /**
+                 * This event is fired when a cluster marker is clicked.
+                 * @name MarkerClusterer#click
+                 * @param {Cluster} c The cluster that was clicked.
+                 * @event
+                 */
+                google.maps.event.trigger(mc, "click", _this.cluster_);
+                google.maps.event.trigger(mc, "clusterclick", _this.cluster_); // deprecated name
+                // The default click handler follows. Disable it by setting
+                // the zoomOnClick property to false.
+                if (mc.getZoomOnClick()) {
+                    // Zoom into the cluster.
+                    var mz_1 = mc.getMaxZoom();
+                    var theBounds_1 = _this.cluster_.getBounds();
+                    mc.getMap().fitBounds(theBounds_1);
+                    // There is a fix for Issue 170 here:
+                    setTimeout(function () {
+                        mc.getMap().fitBounds(theBounds_1);
+                        // Don't zoom beyond the max zoom level
+                        if (mz_1 !== null && mc.getMap().getZoom() > mz_1) {
+                            mc.getMap().setZoom(mz_1 + 1);
+                        }
+                    }, 100);
+                }
+                // Prevent event propagation to the map:
+                e.cancelBubble = true;
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+            }
+        });
+        google.maps.event.addDomListener(this.div_, "mouseover", function () {
+            /**
+             * This event is fired when the mouse moves over a cluster marker.
+             * @name MarkerClusterer#mouseover
+             * @param {Cluster} c The cluster that the mouse moved over.
+             * @event
+             */
+            google.maps.event.trigger(mc, "mouseover", _this.cluster_);
+        });
+        google.maps.event.addDomListener(this.div_, "mouseout", function () {
+            /**
+             * This event is fired when the mouse moves out of a cluster marker.
+             * @name MarkerClusterer#mouseout
+             * @param {Cluster} c The cluster that the mouse moved out of.
+             * @event
+             */
+            google.maps.event.trigger(mc, "mouseout", _this.cluster_);
+        });
+    };
+    /**
+     * Removes the icon from the DOM.
+     */
+    ClusterIcon.prototype.onRemove = function () {
+        if (this.div_ && this.div_.parentNode) {
+            this.hide();
+            google.maps.event.removeListener(this.boundsChangedListener_);
+            google.maps.event.clearInstanceListeners(this.div_);
+            this.div_.parentNode.removeChild(this.div_);
+            this.div_ = null;
+        }
+    };
+    /**
+     * Draws the icon.
+     */
+    ClusterIcon.prototype.draw = function () {
+        if (this.visible_) {
+            var pos = this.getPosFromLatLng_(this.center_);
+            this.div_.style.top = pos.y + "px";
+            this.div_.style.left = pos.x + "px";
+        }
+    };
+    /**
+     * Hides the icon.
+     */
+    ClusterIcon.prototype.hide = function () {
+        if (this.div_) {
+            this.div_.style.display = "none";
+        }
+        this.visible_ = false;
+    };
+    /**
+     * Positions and shows the icon.
+     */
+    ClusterIcon.prototype.show = function () {
+        if (this.div_) {
+            this.div_.className = this.className_;
+            this.div_.style.cssText = this.createCss_(this.getPosFromLatLng_(this.center_));
+            this.div_.innerHTML =
+                (this.style.url ? this.getImageElementHtml() : "") +
+                    this.getLabelDivHtml();
+            if (typeof this.sums_.title === "undefined" || this.sums_.title === "") {
+                this.div_.title = this.cluster_.getMarkerClusterer().getTitle();
+            }
+            else {
+                this.div_.title = this.sums_.title;
+            }
+            this.div_.style.display = "";
+        }
+        this.visible_ = true;
+    };
+    ClusterIcon.prototype.getLabelDivHtml = function () {
+        var mc = this.cluster_.getMarkerClusterer();
+        var ariaLabel = mc.ariaLabelFn(this.sums_.text);
+        var divStyle = {
+            position: "absolute",
+            top: coercePixels(this.anchorText_[0]),
+            left: coercePixels(this.anchorText_[1]),
+            color: this.style.textColor,
+            "font-size": coercePixels(this.style.textSize),
+            "font-family": this.style.fontFamily,
+            "font-weight": this.style.fontWeight,
+            "font-style": this.style.fontStyle,
+            "text-decoration": this.style.textDecoration,
+            "text-align": "center",
+            width: coercePixels(this.style.width),
+            "line-height": coercePixels(this.style.textLineHeight)
+        };
+        return "\n<div aria-label=\"".concat(ariaLabel, "\" style=\"").concat(toCssText(divStyle), "\" tabindex=\"0\">\n  <span aria-hidden=\"true\">").concat(this.sums_.text, "</span>\n</div>\n");
+    };
+    ClusterIcon.prototype.getImageElementHtml = function () {
+        // NOTE: values must be specified in px units
+        var bp = (this.style.backgroundPosition || "0 0").split(" ");
+        var spriteH = parseInt(bp[0].replace(/^\s+|\s+$/g, ""), 10);
+        var spriteV = parseInt(bp[1].replace(/^\s+|\s+$/g, ""), 10);
+        var dimensions = {};
+        if (this.cluster_.getMarkerClusterer().getEnableRetinaIcons()) {
+            dimensions = {
+                width: coercePixels(this.style.width),
+                height: coercePixels(this.style.height)
+            };
+        }
+        else {
+            var _a = [
+                -1 * spriteV,
+                -1 * spriteH + this.style.width,
+                -1 * spriteV + this.style.height,
+                -1 * spriteH,
+            ], Y1 = _a[0], X1 = _a[1], Y2 = _a[2], X2 = _a[3];
+            dimensions = {
+                clip: "rect(".concat(Y1, "px, ").concat(X1, "px, ").concat(Y2, "px, ").concat(X2, "px)")
+            };
+        }
+        var overrideDimensionsDynamicIcon = this.sums_.url
+            ? { width: "100%", height: "100%" }
+            : {};
+        var cssText = toCssText(__assign(__assign({ position: "absolute", top: coercePixels(spriteV), left: coercePixels(spriteH) }, dimensions), overrideDimensionsDynamicIcon));
+        return "<img alt=\"".concat(this.sums_.text, "\" aria-hidden=\"true\" src=\"").concat(this.style.url, "\" style=\"").concat(cssText, "\"/>");
+    };
+    /**
+     * Sets the icon styles to the appropriate element in the styles array.
+     *
+     * @ignore
+     * @param sums The icon label text and styles index.
+     */
+    ClusterIcon.prototype.useStyle = function (sums) {
+        this.sums_ = sums;
+        var index = Math.max(0, sums.index - 1);
+        index = Math.min(this.styles_.length - 1, index);
+        this.style = this.sums_.url
+            ? __assign(__assign({}, this.styles_[index]), { url: this.sums_.url }) : this.styles_[index];
+        this.anchorText_ = this.style.anchorText || [0, 0];
+        this.anchorIcon_ = this.style.anchorIcon || [
+            Math.floor(this.style.height / 2),
+            Math.floor(this.style.width / 2),
+        ];
+        this.className_ =
+            this.cluster_.getMarkerClusterer().getClusterClass() +
+                " " +
+                (this.style.className || "cluster-" + index);
+    };
+    /**
+     * Sets the position at which to center the icon.
+     *
+     * @param center The latlng to set as the center.
+     */
+    ClusterIcon.prototype.setCenter = function (center) {
+        this.center_ = center;
+    };
+    /**
+     * Creates the `cssText` style parameter based on the position of the icon.
+     *
+     * @param pos The position of the icon.
+     * @return The CSS style text.
+     */
+    ClusterIcon.prototype.createCss_ = function (pos) {
+        return toCssText({
+            "z-index": "".concat(this.cluster_.getMarkerClusterer().getZIndex()),
+            top: coercePixels(pos.y),
+            left: coercePixels(pos.x),
+            width: coercePixels(this.style.width),
+            height: coercePixels(this.style.height),
+            cursor: "pointer",
+            position: "absolute",
+            "-webkit-user-select": "none",
+            "-khtml-user-select": "none",
+            "-moz-user-select": "none",
+            "-o-user-select": "none",
+            "user-select": "none"
+        });
+    };
+    /**
+     * Returns the position at which to place the DIV depending on the latlng.
+     *
+     * @param latlng The position in latlng.
+     * @return The position in pixels.
+     */
+    ClusterIcon.prototype.getPosFromLatLng_ = function (latlng) {
+        var pos = this.getProjection().fromLatLngToDivPixel(latlng);
+        pos.x = Math.floor(pos.x - this.anchorIcon_[1]);
+        pos.y = Math.floor(pos.y - this.anchorIcon_[0]);
+        return pos;
+    };
+    return ClusterIcon;
+}(OverlayViewSafe));
+
+/**
+ * Copyright 2019 Google LLC. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/**
+ * Creates a single cluster that manages a group of proximate markers.
+ *  Used internally, do not call this constructor directly.
+ */
+var Cluster = /** @class */ (function () {
+    /**
+     *
+     * @param markerClusterer_ The `MarkerClusterer` object with which this
+     *  cluster is associated.
+     */
+    function Cluster(markerClusterer_) {
+        this.markerClusterer_ = markerClusterer_;
+        this.map_ = this.markerClusterer_.getMap();
+        this.minClusterSize_ = this.markerClusterer_.getMinimumClusterSize();
+        this.averageCenter_ = this.markerClusterer_.getAverageCenter();
+        this.markers_ = []; // TODO: type;
+        this.center_ = null;
+        this.bounds_ = null;
+        this.clusterIcon_ = new ClusterIcon(this, this.markerClusterer_.getStyles());
+    }
+    /**
+     * Returns the number of markers managed by the cluster. You can call this from
+     * a `click`, `mouseover`, or `mouseout` event handler for the `MarkerClusterer` object.
+     *
+     * @return The number of markers in the cluster.
+     */
+    Cluster.prototype.getSize = function () {
+        return this.markers_.length;
+    };
+    /**
+     * Returns the array of markers managed by the cluster. You can call this from
+     * a `click`, `mouseover`, or `mouseout` event handler for the `MarkerClusterer` object.
+     *
+     * @return The array of markers in the cluster.
+     */
+    Cluster.prototype.getMarkers = function () {
+        return this.markers_;
+    };
+    /**
+     * Returns the center of the cluster. You can call this from
+     * a `click`, `mouseover`, or `mouseout` event handler
+     * for the `MarkerClusterer` object.
+     *
+     * @return The center of the cluster.
+     */
+    Cluster.prototype.getCenter = function () {
+        return this.center_;
+    };
+    /**
+     * Returns the map with which the cluster is associated.
+     *
+     * @return The map.
+     * @ignore
+     */
+    Cluster.prototype.getMap = function () {
+        return this.map_;
+    };
+    /**
+     * Returns the `MarkerClusterer` object with which the cluster is associated.
+     *
+     * @return The associated marker clusterer.
+     * @ignore
+     */
+    Cluster.prototype.getMarkerClusterer = function () {
+        return this.markerClusterer_;
+    };
+    /**
+     * Returns the bounds of the cluster.
+     *
+     * @return the cluster bounds.
+     * @ignore
+     */
+    Cluster.prototype.getBounds = function () {
+        var bounds = new google.maps.LatLngBounds(this.center_, this.center_);
+        var markers = this.getMarkers();
+        for (var i = 0; i < markers.length; i++) {
+            bounds.extend(markers[i].getPosition());
+        }
+        return bounds;
+    };
+    /**
+     * Removes the cluster from the map.
+     *
+     * @ignore
+     */
+    Cluster.prototype.remove = function () {
+        this.clusterIcon_.setMap(null);
+        this.markers_ = [];
+        delete this.markers_;
+    };
+    /**
+     * Adds a marker to the cluster.
+     *
+     * @param marker The marker to be added.
+     * @return True if the marker was added.
+     * @ignore
+     */
+    Cluster.prototype.addMarker = function (marker) {
+        if (this.isMarkerAlreadyAdded_(marker)) {
+            return false;
+        }
+        if (!this.center_) {
+            this.center_ = marker.getPosition();
+            this.calculateBounds_();
+        }
+        else {
+            if (this.averageCenter_) {
+                var l = this.markers_.length + 1;
+                var lat = (this.center_.lat() * (l - 1) + marker.getPosition().lat()) / l;
+                var lng = (this.center_.lng() * (l - 1) + marker.getPosition().lng()) / l;
+                this.center_ = new google.maps.LatLng(lat, lng);
+                this.calculateBounds_();
+            }
+        }
+        marker.isAdded = true;
+        this.markers_.push(marker);
+        var mCount = this.markers_.length;
+        var mz = this.markerClusterer_.getMaxZoom();
+        if (mz !== null && this.map_.getZoom() > mz) {
+            // Zoomed in past max zoom, so show the marker.
+            if (marker.getMap() !== this.map_) {
+                marker.setMap(this.map_);
+            }
+        }
+        else if (mCount < this.minClusterSize_) {
+            // Min cluster size not reached so show the marker.
+            if (marker.getMap() !== this.map_) {
+                marker.setMap(this.map_);
+            }
+        }
+        else if (mCount === this.minClusterSize_) {
+            // Hide the markers that were showing.
+            for (var i = 0; i < mCount; i++) {
+                this.markers_[i].setMap(null);
+            }
+        }
+        else {
+            marker.setMap(null);
+        }
+        return true;
+    };
+    /**
+     * Determines if a marker lies within the cluster's bounds.
+     *
+     * @param marker The marker to check.
+     * @return True if the marker lies in the bounds.
+     * @ignore
+     */
+    Cluster.prototype.isMarkerInClusterBounds = function (marker) {
+        return this.bounds_.contains(marker.getPosition());
+    };
+    /**
+     * Calculates the extended bounds of the cluster with the grid.
+     */
+    Cluster.prototype.calculateBounds_ = function () {
+        var bounds = new google.maps.LatLngBounds(this.center_, this.center_);
+        this.bounds_ = this.markerClusterer_.getExtendedBounds(bounds);
+    };
+    /**
+     * Updates the cluster icon.
+     */
+    Cluster.prototype.updateIcon = function () {
+        var mCount = this.markers_.length;
+        var mz = this.markerClusterer_.getMaxZoom();
+        if (mz !== null && this.map_.getZoom() > mz) {
+            this.clusterIcon_.hide();
+            return;
+        }
+        if (mCount < this.minClusterSize_) {
+            // Min cluster size not yet reached.
+            this.clusterIcon_.hide();
+            return;
+        }
+        var numStyles = this.markerClusterer_.getStyles().length;
+        var sums = this.markerClusterer_.getCalculator()(this.markers_, numStyles);
+        this.clusterIcon_.setCenter(this.center_);
+        this.clusterIcon_.useStyle(sums);
+        this.clusterIcon_.show();
+    };
+    /**
+     * Determines if a marker has already been added to the cluster.
+     *
+     * @param marker The marker to check.
+     * @return True if the marker has already been added.
+     */
+    Cluster.prototype.isMarkerAlreadyAdded_ = function (marker) {
+        if (this.markers_.indexOf) {
+            return this.markers_.indexOf(marker) !== -1;
+        }
+        else {
+            for (var i = 0; i < this.markers_.length; i++) {
+                if (marker === this.markers_[i]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    return Cluster;
+}());
+
+/**
+ * Copyright 2019 Google LLC. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/**
+ * @ignore
+ */
+var getOption = function (options, prop, def) {
+    if (options[prop] !== undefined) {
+        return options[prop];
+    }
+    else {
+        return def;
+    }
+};
+var MarkerClusterer = /** @class */ (function (_super) {
+    __extends(MarkerClusterer, _super);
+    /**
+     * Creates a MarkerClusterer object with the options specified in {@link MarkerClustererOptions}.
+     * @param map The Google map to attach to.
+     * @param markers The markers to be added to the cluster.
+     * @param options The optional parameters.
+     */
+    function MarkerClusterer(map, markers, options) {
+        if (markers === void 0) { markers = []; }
+        if (options === void 0) { options = {}; }
+        var _this = _super.call(this) || this;
+        _this.options = options;
+        _this.markers_ = [];
+        _this.clusters_ = [];
+        _this.listeners_ = [];
+        _this.activeMap_ = null;
+        _this.ready_ = false;
+        _this.ariaLabelFn = _this.options.ariaLabelFn || (function () { return ""; });
+        _this.zIndex_ = _this.options.zIndex || Number(google.maps.Marker.MAX_ZINDEX) + 1;
+        _this.gridSize_ = _this.options.gridSize || 60;
+        _this.minClusterSize_ = _this.options.minimumClusterSize || 2;
+        _this.maxZoom_ = _this.options.maxZoom || null;
+        _this.styles_ = _this.options.styles || [];
+        _this.title_ = _this.options.title || "";
+        _this.zoomOnClick_ = getOption(_this.options, "zoomOnClick", true);
+        _this.averageCenter_ = getOption(_this.options, "averageCenter", false);
+        _this.ignoreHidden_ = getOption(_this.options, "ignoreHidden", false);
+        _this.enableRetinaIcons_ = getOption(_this.options, "enableRetinaIcons", false);
+        _this.imagePath_ = _this.options.imagePath || MarkerClusterer.IMAGE_PATH;
+        _this.imageExtension_ = _this.options.imageExtension || MarkerClusterer.IMAGE_EXTENSION;
+        _this.imageSizes_ = _this.options.imageSizes || MarkerClusterer.IMAGE_SIZES;
+        _this.calculator_ = _this.options.calculator || MarkerClusterer.CALCULATOR;
+        _this.batchSize_ = _this.options.batchSize || MarkerClusterer.BATCH_SIZE;
+        _this.batchSizeIE_ = _this.options.batchSizeIE || MarkerClusterer.BATCH_SIZE_IE;
+        _this.clusterClass_ = _this.options.clusterClass || "cluster";
+        if (navigator.userAgent.toLowerCase().indexOf("msie") !== -1) {
+            // Try to avoid IE timeout when processing a huge number of markers:
+            _this.batchSize_ = _this.batchSizeIE_;
+        }
+        _this.setupStyles_();
+        _this.addMarkers(markers, true);
+        _this.setMap(map); // Note: this causes onAdd to be called
+        return _this;
+    }
+    /**
+     * Implementation of the onAdd interface method.
+     * @ignore
+     */
+    MarkerClusterer.prototype.onAdd = function () {
+        var _this = this;
+        this.activeMap_ = this.getMap();
+        this.ready_ = true;
+        this.repaint();
+        this.prevZoom_ = this.getMap().getZoom();
+        // Add the map event listeners
+        this.listeners_ = [
+            google.maps.event.addListener(this.getMap(), "zoom_changed", function () {
+                var map = _this.getMap(); // eslint-disable-line @typescript-eslint/no-explicit-any
+                // Fix for bug #407
+                // Determines map type and prevents illegal zoom levels
+                var minZoom = map.minZoom || 0;
+                var maxZoom = Math.min(map.maxZoom || 100, map.mapTypes[map.getMapTypeId()].maxZoom);
+                var zoom = Math.min(Math.max(_this.getMap().getZoom(), minZoom), maxZoom);
+                if (_this.prevZoom_ != zoom) {
+                    _this.prevZoom_ = zoom;
+                    _this.resetViewport_(false);
+                }
+            }),
+            google.maps.event.addListener(this.getMap(), "idle", function () {
+                _this.redraw_();
+            }),
+        ];
+    };
+    /**
+     * Implementation of the onRemove interface method.
+     * Removes map event listeners and all cluster icons from the DOM.
+     * All managed markers are also put back on the map.
+     * @ignore
+     */
+    MarkerClusterer.prototype.onRemove = function () {
+        // Put all the managed markers back on the map:
+        for (var i = 0; i < this.markers_.length; i++) {
+            if (this.markers_[i].getMap() !== this.activeMap_) {
+                this.markers_[i].setMap(this.activeMap_);
+            }
+        }
+        // Remove all clusters:
+        for (var i = 0; i < this.clusters_.length; i++) {
+            this.clusters_[i].remove();
+        }
+        this.clusters_ = [];
+        // Remove map event listeners:
+        for (var i = 0; i < this.listeners_.length; i++) {
+            google.maps.event.removeListener(this.listeners_[i]);
+        }
+        this.listeners_ = [];
+        this.activeMap_ = null;
+        this.ready_ = false;
+    };
+    /**
+     * Implementation of the draw interface method.
+     * @ignore
+     */
+    MarkerClusterer.prototype.draw = function () { };
+    /**
+     * Sets up the styles object.
+     */
+    MarkerClusterer.prototype.setupStyles_ = function () {
+        if (this.styles_.length > 0) {
+            return;
+        }
+        for (var i = 0; i < this.imageSizes_.length; i++) {
+            var size = this.imageSizes_[i];
+            this.styles_.push(MarkerClusterer.withDefaultStyle({
+                url: this.imagePath_ + (i + 1) + "." + this.imageExtension_,
+                height: size,
+                width: size
+            }));
+        }
+    };
+    /**
+     *  Fits the map to the bounds of the markers managed by the clusterer.
+     */
+    MarkerClusterer.prototype.fitMapToMarkers = function (padding) {
+        var markers = this.getMarkers();
+        var bounds = new google.maps.LatLngBounds();
+        for (var i = 0; i < markers.length; i++) {
+            // March 3, 2018: Bug fix -- honor the ignoreHidden property
+            if (markers[i].getVisible() || !this.getIgnoreHidden()) {
+                bounds.extend(markers[i].getPosition());
+            }
+        }
+        this.getMap().fitBounds(bounds, padding);
+    };
+    /**
+     * Returns the value of the `gridSize` property.
+     *
+     * @return The grid size.
+     */
+    MarkerClusterer.prototype.getGridSize = function () {
+        return this.gridSize_;
+    };
+    /**
+     * Sets the value of the `gridSize` property.
+     *
+     * @param gridSize The grid size.
+     */
+    MarkerClusterer.prototype.setGridSize = function (gridSize) {
+        this.gridSize_ = gridSize;
+    };
+    /**
+     * Returns the value of the `minimumClusterSize` property.
+     *
+     * @return The minimum cluster size.
+     */
+    MarkerClusterer.prototype.getMinimumClusterSize = function () {
+        return this.minClusterSize_;
+    };
+    /**
+     * Sets the value of the `minimumClusterSize` property.
+     *
+     * @param minimumClusterSize The minimum cluster size.
+     */
+    MarkerClusterer.prototype.setMinimumClusterSize = function (minimumClusterSize) {
+        this.minClusterSize_ = minimumClusterSize;
+    };
+    /**
+     *  Returns the value of the `maxZoom` property.
+     *
+     *  @return The maximum zoom level.
+     */
+    MarkerClusterer.prototype.getMaxZoom = function () {
+        return this.maxZoom_;
+    };
+    /**
+     *  Sets the value of the `maxZoom` property.
+     *
+     *  @param maxZoom The maximum zoom level.
+     */
+    MarkerClusterer.prototype.setMaxZoom = function (maxZoom) {
+        this.maxZoom_ = maxZoom;
+    };
+    MarkerClusterer.prototype.getZIndex = function () {
+        return this.zIndex_;
+    };
+    MarkerClusterer.prototype.setZIndex = function (zIndex) {
+        this.zIndex_ = zIndex;
+    };
+    /**
+     *  Returns the value of the `styles` property.
+     *
+     *  @return The array of styles defining the cluster markers to be used.
+     */
+    MarkerClusterer.prototype.getStyles = function () {
+        return this.styles_;
+    };
+    /**
+     *  Sets the value of the `styles` property.
+     *
+     *  @param styles The array of styles to use.
+     */
+    MarkerClusterer.prototype.setStyles = function (styles) {
+        this.styles_ = styles;
+    };
+    /**
+     * Returns the value of the `title` property.
+     *
+     * @return The content of the title text.
+     */
+    MarkerClusterer.prototype.getTitle = function () {
+        return this.title_;
+    };
+    /**
+     *  Sets the value of the `title` property.
+     *
+     *  @param title The value of the title property.
+     */
+    MarkerClusterer.prototype.setTitle = function (title) {
+        this.title_ = title;
+    };
+    /**
+     * Returns the value of the `zoomOnClick` property.
+     *
+     * @return True if zoomOnClick property is set.
+     */
+    MarkerClusterer.prototype.getZoomOnClick = function () {
+        return this.zoomOnClick_;
+    };
+    /**
+     *  Sets the value of the `zoomOnClick` property.
+     *
+     *  @param zoomOnClick The value of the zoomOnClick property.
+     */
+    MarkerClusterer.prototype.setZoomOnClick = function (zoomOnClick) {
+        this.zoomOnClick_ = zoomOnClick;
+    };
+    /**
+     * Returns the value of the `averageCenter` property.
+     *
+     * @return True if averageCenter property is set.
+     */
+    MarkerClusterer.prototype.getAverageCenter = function () {
+        return this.averageCenter_;
+    };
+    /**
+     *  Sets the value of the `averageCenter` property.
+     *
+     *  @param averageCenter The value of the averageCenter property.
+     */
+    MarkerClusterer.prototype.setAverageCenter = function (averageCenter) {
+        this.averageCenter_ = averageCenter;
+    };
+    /**
+     * Returns the value of the `ignoreHidden` property.
+     *
+     * @return True if ignoreHidden property is set.
+     */
+    MarkerClusterer.prototype.getIgnoreHidden = function () {
+        return this.ignoreHidden_;
+    };
+    /**
+     *  Sets the value of the `ignoreHidden` property.
+     *
+     *  @param ignoreHidden The value of the ignoreHidden property.
+     */
+    MarkerClusterer.prototype.setIgnoreHidden = function (ignoreHidden) {
+        this.ignoreHidden_ = ignoreHidden;
+    };
+    /**
+     * Returns the value of the `enableRetinaIcons` property.
+     *
+     * @return True if enableRetinaIcons property is set.
+     */
+    MarkerClusterer.prototype.getEnableRetinaIcons = function () {
+        return this.enableRetinaIcons_;
+    };
+    /**
+     *  Sets the value of the `enableRetinaIcons` property.
+     *
+     *  @param enableRetinaIcons The value of the enableRetinaIcons property.
+     */
+    MarkerClusterer.prototype.setEnableRetinaIcons = function (enableRetinaIcons) {
+        this.enableRetinaIcons_ = enableRetinaIcons;
+    };
+    /**
+     * Returns the value of the `imageExtension` property.
+     *
+     * @return The value of the imageExtension property.
+     */
+    MarkerClusterer.prototype.getImageExtension = function () {
+        return this.imageExtension_;
+    };
+    /**
+     *  Sets the value of the `imageExtension` property.
+     *
+     *  @param imageExtension The value of the imageExtension property.
+     */
+    MarkerClusterer.prototype.setImageExtension = function (imageExtension) {
+        this.imageExtension_ = imageExtension;
+    };
+    /**
+     * Returns the value of the `imagePath` property.
+     *
+     * @return The value of the imagePath property.
+     */
+    MarkerClusterer.prototype.getImagePath = function () {
+        return this.imagePath_;
+    };
+    /**
+     *  Sets the value of the `imagePath` property.
+     *
+     *  @param imagePath The value of the imagePath property.
+     */
+    MarkerClusterer.prototype.setImagePath = function (imagePath) {
+        this.imagePath_ = imagePath;
+    };
+    /**
+     * Returns the value of the `imageSizes` property.
+     *
+     * @return The value of the imageSizes property.
+     */
+    MarkerClusterer.prototype.getImageSizes = function () {
+        return this.imageSizes_;
+    };
+    /**
+     *  Sets the value of the `imageSizes` property.
+     *
+     *  @param imageSizes The value of the imageSizes property.
+     */
+    MarkerClusterer.prototype.setImageSizes = function (imageSizes) {
+        this.imageSizes_ = imageSizes;
+    };
+    /**
+     * Returns the value of the `calculator` property.
+     *
+     * @return the value of the calculator property.
+     */
+    MarkerClusterer.prototype.getCalculator = function () {
+        return this.calculator_;
+    };
+    /**
+     * Sets the value of the `calculator` property.
+     *
+     * @param calculator The value of the calculator property.
+     */
+    MarkerClusterer.prototype.setCalculator = function (calculator) {
+        this.calculator_ = calculator;
+    };
+    /**
+     * Returns the value of the `batchSizeIE` property.
+     *
+     * @return the value of the batchSizeIE property.
+     */
+    MarkerClusterer.prototype.getBatchSizeIE = function () {
+        return this.batchSizeIE_;
+    };
+    /**
+     * Sets the value of the `batchSizeIE` property.
+     *
+     *  @param batchSizeIE The value of the batchSizeIE property.
+     */
+    MarkerClusterer.prototype.setBatchSizeIE = function (batchSizeIE) {
+        this.batchSizeIE_ = batchSizeIE;
+    };
+    /**
+     * Returns the value of the `clusterClass` property.
+     *
+     * @return the value of the clusterClass property.
+     */
+    MarkerClusterer.prototype.getClusterClass = function () {
+        return this.clusterClass_;
+    };
+    /**
+     * Sets the value of the `clusterClass` property.
+     *
+     *  @param clusterClass The value of the clusterClass property.
+     */
+    MarkerClusterer.prototype.setClusterClass = function (clusterClass) {
+        this.clusterClass_ = clusterClass;
+    };
+    /**
+     *  Returns the array of markers managed by the clusterer.
+     *
+     *  @return The array of markers managed by the clusterer.
+     */
+    MarkerClusterer.prototype.getMarkers = function () {
+        return this.markers_;
+    };
+    /**
+     *  Returns the number of markers managed by the clusterer.
+     *
+     *  @return The number of markers.
+     */
+    MarkerClusterer.prototype.getTotalMarkers = function () {
+        return this.markers_.length;
+    };
+    /**
+     * Returns the current array of clusters formed by the clusterer.
+     *
+     * @return The array of clusters formed by the clusterer.
+     */
+    MarkerClusterer.prototype.getClusters = function () {
+        return this.clusters_;
+    };
+    /**
+     * Returns the number of clusters formed by the clusterer.
+     *
+     * @return The number of clusters formed by the clusterer.
+     */
+    MarkerClusterer.prototype.getTotalClusters = function () {
+        return this.clusters_.length;
+    };
+    /**
+     * Adds a marker to the clusterer. The clusters are redrawn unless
+     *  `nodraw` is set to `true`.
+     *
+     * @param marker The marker to add.
+     * @param nodraw Set to `true` to prevent redrawing.
+     */
+    MarkerClusterer.prototype.addMarker = function (marker, nodraw) {
+        this.pushMarkerTo_(marker);
+        if (!nodraw) {
+            this.redraw_();
+        }
+    };
+    /**
+     * Adds an array of markers to the clusterer. The clusters are redrawn unless
+     *  `nodraw` is set to `true`.
+     *
+     * @param markers The markers to add.
+     * @param nodraw Set to `true` to prevent redrawing.
+     */
+    MarkerClusterer.prototype.addMarkers = function (markers, nodraw) {
+        for (var key in markers) {
+            if (Object.prototype.hasOwnProperty.call(markers, key)) {
+                this.pushMarkerTo_(markers[key]);
+            }
+        }
+        if (!nodraw) {
+            this.redraw_();
+        }
+    };
+    /**
+     * Pushes a marker to the clusterer.
+     *
+     * @param marker The marker to add.
+     */
+    MarkerClusterer.prototype.pushMarkerTo_ = function (marker) {
+        var _this = this;
+        // If the marker is draggable add a listener so we can update the clusters on the dragend:
+        if (marker.getDraggable()) {
+            google.maps.event.addListener(marker, "dragend", function () {
+                if (_this.ready_) {
+                    marker.isAdded = false;
+                    _this.repaint();
+                }
+            });
+        }
+        marker.isAdded = false;
+        this.markers_.push(marker);
+    };
+    /**
+     * Removes a marker from the cluster.  The clusters are redrawn unless
+     *  `nodraw` is set to `true`. Returns `true` if the
+     *  marker was removed from the clusterer.
+     *
+     * @param marker The marker to remove.
+     * @param nodraw Set to `true` to prevent redrawing.
+     * @return True if the marker was removed from the clusterer.
+     */
+    MarkerClusterer.prototype.removeMarker = function (marker, nodraw) {
+        var removed = this.removeMarker_(marker);
+        if (!nodraw && removed) {
+            this.repaint();
+        }
+        return removed;
+    };
+    /**
+     * Removes an array of markers from the cluster. The clusters are redrawn unless
+     *  `nodraw` is set to `true`. Returns `true` if markers were removed from the clusterer.
+     *
+     * @param markers The markers to remove.
+     * @param nodraw Set to `true` to prevent redrawing.
+     * @return True if markers were removed from the clusterer.
+     */
+    MarkerClusterer.prototype.removeMarkers = function (markers, nodraw) {
+        var removed = false;
+        for (var i = 0; i < markers.length; i++) {
+            var r = this.removeMarker_(markers[i]);
+            removed = removed || r;
+        }
+        if (!nodraw && removed) {
+            this.repaint();
+        }
+        return removed;
+    };
+    /**
+     * Removes a marker and returns true if removed, false if not.
+     *
+     * @param marker The marker to remove
+     * @return Whether the marker was removed or not
+     */
+    MarkerClusterer.prototype.removeMarker_ = function (marker) {
+        var index = -1;
+        if (this.markers_.indexOf) {
+            index = this.markers_.indexOf(marker);
+        }
+        else {
+            for (var i = 0; i < this.markers_.length; i++) {
+                if (marker === this.markers_[i]) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        if (index === -1) {
+            // Marker is not in our list of markers, so do nothing:
+            return false;
+        }
+        marker.setMap(null);
+        this.markers_.splice(index, 1); // Remove the marker from the list of managed markers
+        return true;
+    };
+    /**
+     * Removes all clusters and markers from the map and also removes all markers
+     *  managed by the clusterer.
+     */
+    MarkerClusterer.prototype.clearMarkers = function () {
+        this.resetViewport_(true);
+        this.markers_ = [];
+    };
+    /**
+     * Recalculates and redraws all the marker clusters from scratch.
+     *  Call this after changing any properties.
+     */
+    MarkerClusterer.prototype.repaint = function () {
+        var oldClusters = this.clusters_.slice();
+        this.clusters_ = [];
+        this.resetViewport_(false);
+        this.redraw_();
+        // Remove the old clusters.
+        // Do it in a timeout to prevent blinking effect.
+        setTimeout(function () {
+            for (var i = 0; i < oldClusters.length; i++) {
+                oldClusters[i].remove();
+            }
+        }, 0);
+    };
+    /**
+     * Returns the current bounds extended by the grid size.
+     *
+     * @param bounds The bounds to extend.
+     * @return The extended bounds.
+     * @ignore
+     */
+    MarkerClusterer.prototype.getExtendedBounds = function (bounds) {
+        var projection = this.getProjection();
+        // Turn the bounds into latlng.
+        var tr = new google.maps.LatLng(bounds.getNorthEast().lat(), bounds.getNorthEast().lng());
+        var bl = new google.maps.LatLng(bounds.getSouthWest().lat(), bounds.getSouthWest().lng());
+        // Convert the points to pixels and the extend out by the grid size.
+        var trPix = projection.fromLatLngToDivPixel(tr);
+        trPix.x += this.gridSize_;
+        trPix.y -= this.gridSize_;
+        var blPix = projection.fromLatLngToDivPixel(bl);
+        blPix.x -= this.gridSize_;
+        blPix.y += this.gridSize_;
+        // Convert the pixel points back to LatLng
+        var ne = projection.fromDivPixelToLatLng(trPix);
+        var sw = projection.fromDivPixelToLatLng(blPix);
+        // Extend the bounds to contain the new bounds.
+        bounds.extend(ne);
+        bounds.extend(sw);
+        return bounds;
+    };
+    /**
+     * Redraws all the clusters.
+     */
+    MarkerClusterer.prototype.redraw_ = function () {
+        this.createClusters_(0);
+    };
+    /**
+     * Removes all clusters from the map. The markers are also removed from the map
+     *  if `hide` is set to `true`.
+     *
+     * @param hide Set to `true` to also remove the markers from the map.
+     */
+    MarkerClusterer.prototype.resetViewport_ = function (hide) {
+        // Remove all the clusters
+        for (var i = 0; i < this.clusters_.length; i++) {
+            this.clusters_[i].remove();
+        }
+        this.clusters_ = [];
+        // Reset the markers to not be added and to be removed from the map.
+        for (var i = 0; i < this.markers_.length; i++) {
+            var marker = this.markers_[i];
+            marker.isAdded = false;
+            if (hide) {
+                marker.setMap(null);
+            }
+        }
+    };
+    /**
+     * Calculates the distance between two latlng locations in km.
+     *
+     * @param p1 The first lat lng point.
+     * @param p2 The second lat lng point.
+     * @return The distance between the two points in km.
+     * @link http://www.movable-type.co.uk/scripts/latlong.html
+     */
+    MarkerClusterer.prototype.distanceBetweenPoints_ = function (p1, p2) {
+        var R = 6371; // Radius of the Earth in km
+        var dLat = ((p2.lat() - p1.lat()) * Math.PI) / 180;
+        var dLon = ((p2.lng() - p1.lng()) * Math.PI) / 180;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos((p1.lat() * Math.PI) / 180) *
+                Math.cos((p2.lat() * Math.PI) / 180) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    };
+    /**
+     * Determines if a marker is contained in a bounds.
+     *
+     * @param marker The marker to check.
+     * @param bounds The bounds to check against.
+     * @return True if the marker is in the bounds.
+     */
+    MarkerClusterer.prototype.isMarkerInBounds_ = function (marker, bounds) {
+        return bounds.contains(marker.getPosition());
+    };
+    /**
+     * Adds a marker to a cluster, or creates a new cluster.
+     *
+     * @param marker The marker to add.
+     */
+    MarkerClusterer.prototype.addToClosestCluster_ = function (marker) {
+        var distance = 40000; // Some large number
+        var clusterToAddTo = null;
+        for (var i = 0; i < this.clusters_.length; i++) {
+            var cluster = this.clusters_[i];
+            var center = cluster.getCenter();
+            if (center) {
+                var d = this.distanceBetweenPoints_(center, marker.getPosition());
+                if (d < distance) {
+                    distance = d;
+                    clusterToAddTo = cluster;
+                }
+            }
+        }
+        if (clusterToAddTo && clusterToAddTo.isMarkerInClusterBounds(marker)) {
+            clusterToAddTo.addMarker(marker);
+        }
+        else {
+            var cluster = new Cluster(this);
+            cluster.addMarker(marker);
+            this.clusters_.push(cluster);
+        }
+    };
+    /**
+     * Creates the clusters. This is done in batches to avoid timeout errors
+     *  in some browsers when there is a huge number of markers.
+     *
+     * @param iFirst The index of the first marker in the batch of
+     *  markers to be added to clusters.
+     */
+    MarkerClusterer.prototype.createClusters_ = function (iFirst) {
+        var _this = this;
+        if (!this.ready_) {
+            return;
+        }
+        // Cancel previous batch processing if we're working on the first batch:
+        if (iFirst === 0) {
+            google.maps.event.trigger(this, "clusteringbegin", this);
+            if (typeof this.timerRefStatic !== "undefined") {
+                clearTimeout(this.timerRefStatic);
+                delete this.timerRefStatic;
+            }
+        }
+        // Get our current map view bounds.
+        // Create a new bounds object so we don't affect the map.
+        //
+        // See Comments 9 & 11 on Issue 3651 relating to this workaround for a Google Maps bug:
+        var mapBounds = new google.maps.LatLngBounds(this.getMap().getBounds().getSouthWest(), this.getMap().getBounds().getNorthEast());
+        var bounds = this.getExtendedBounds(mapBounds);
+        var iLast = Math.min(iFirst + this.batchSize_, this.markers_.length);
+        for (var i = iFirst; i < iLast; i++) {
+            var marker = this.markers_[i];
+            if (!marker.isAdded && this.isMarkerInBounds_(marker, bounds)) {
+                if (!this.ignoreHidden_ ||
+                    (this.ignoreHidden_ && marker.getVisible())) {
+                    this.addToClosestCluster_(marker);
+                }
+            }
+        }
+        if (iLast < this.markers_.length) {
+            this.timerRefStatic = window.setTimeout(function () {
+                _this.createClusters_(iLast);
+            }, 0);
+        }
+        else {
+            delete this.timerRefStatic;
+            google.maps.event.trigger(this, "clusteringend", this);
+            for (var i = 0; i < this.clusters_.length; i++) {
+                this.clusters_[i].updateIcon();
+            }
+        }
+    };
+    /**
+     * The default function for determining the label text and style
+     * for a cluster icon.
+     *
+     * @param markers The array of markers represented by the cluster.
+     * @param numStyles The number of marker styles available.
+     * @return The information resource for the cluster.
+     */
+    MarkerClusterer.CALCULATOR = function (markers, numStyles) {
+        var index = 0;
+        var count = markers.length;
+        var dv = count;
+        while (dv !== 0) {
+            dv = Math.floor(dv / 10);
+            index++;
+        }
+        index = Math.min(index, numStyles);
+        return {
+            text: count.toString(),
+            index: index,
+            title: ""
+        };
+    };
+    /**
+     * Generates default styles augmented with user passed values.
+     * Useful when you want to override some default values but keep untouched
+     *
+     * @param overrides override default values
+     */
+    MarkerClusterer.withDefaultStyle = function (overrides) {
+        return __assign({ textColor: "black", textSize: 11, textDecoration: "none", textLineHeight: overrides.height, fontWeight: "bold", fontStyle: "normal", fontFamily: "Arial,sans-serif", backgroundPosition: "0 0" }, overrides);
+    };
+    /**
+     * The number of markers to process in one batch.
+     */
+    MarkerClusterer.BATCH_SIZE = 2000;
+    /**
+     * The number of markers to process in one batch (IE only).
+     */
+    MarkerClusterer.BATCH_SIZE_IE = 500;
+    /**
+     * The default root name for the marker cluster images.
+     */
+    MarkerClusterer.IMAGE_PATH = "../images/m";
+    /**
+     * The default extension name for the marker cluster images.
+     */
+    MarkerClusterer.IMAGE_EXTENSION = "png";
+    /**
+     * The default array of sizes for the marker cluster images.
+     */
+    MarkerClusterer.IMAGE_SIZES = [53, 56, 66, 78, 90];
+    return MarkerClusterer;
+}(OverlayViewSafe));
+
+/**
+ * Copyright 2019 Google LLC. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+//# sourceMappingURL=index.esm.js.map
+
+
+/***/ }),
+
 /***/ "./node_modules/@popperjs/core/lib/createPopper.js":
 /*!*********************************************************!*\
   !*** ./node_modules/@popperjs/core/lib/createPopper.js ***!
@@ -20676,6 +23381,2644 @@ const getGlobalThis = () => {
 
 /***/ }),
 
+/***/ "./node_modules/@vueform/multiselect/dist/multiselect.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@vueform/multiselect/dist/multiselect.js ***!
+  \***************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ script)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+
+function isNullish (val) {
+  return [null, undefined].indexOf(val) !== -1
+}
+
+function useData (props, context, dep)
+{
+  const { object, valueProp, mode } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.toRefs)(props);
+
+  const $this = (0,vue__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)().proxy;
+
+  // ============ DEPENDENCIES ============
+
+  const iv = dep.iv;
+
+  // =============== METHODS ==============
+
+  const update = (val) => {
+    // Setting object(s) as internal value
+    iv.value = makeInternal(val);
+
+    // Setting object(s) or plain value as external 
+    // value based on `option` setting
+    const externalVal = makeExternal(val);
+
+    context.emit('change', externalVal, $this);
+    context.emit('input', externalVal);
+    context.emit('update:modelValue', externalVal);
+  }; 
+
+  // no export
+  const makeExternal = (val) => {
+    // If external value should be object
+    // no transformation is required
+    if (object.value) {
+      return val
+    }
+
+    // No need to transform if empty value
+    if (isNullish(val)) {
+      return val
+    }
+
+    // If external should be plain transform
+    // value object to plain values
+    return !Array.isArray(val) ? val[valueProp.value] : val.map(v => v[valueProp.value])
+  };
+
+  // no export
+  const makeInternal = (val) => {
+    if (isNullish(val)) {
+      return mode.value === 'single' ? {} : []
+    }
+
+    return val
+  };
+
+  return {
+    update,
+  }
+}
+
+function useValue (props, context)
+{
+  const { value, modelValue, mode, valueProp } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.toRefs)(props);
+
+  // ================ DATA ================
+
+  // internalValue
+  const iv = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(mode.value !== 'single' ? [] : {});
+
+  // ============== COMPUTED ==============
+
+  /* istanbul ignore next */
+  // externalValue
+  const ev = context.expose !== undefined ? modelValue : value;
+
+  const plainValue = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return mode.value === 'single' ? iv.value[valueProp.value] : iv.value.map(v=>v[valueProp.value])
+  });
+
+  const textValue = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return mode.value !== 'single' ? iv.value.map(v=>v[valueProp.value]).join(',') : iv.value[valueProp.value]
+  });
+
+  return {
+    iv,
+    internalValue: iv,
+    ev,
+    externalValue: ev,
+    textValue,
+    plainValue,
+  }
+}
+
+function useSearch (props, context, dep)
+{  const { regex } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.toRefs)(props);
+
+  const $this = (0,vue__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)().proxy;
+
+  // ============ DEPENDENCIES ============
+
+  const isOpen = dep.isOpen;
+  const open = dep.open;
+
+  // ================ DATA ================
+
+  const search = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+
+  const input = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+
+  // =============== METHODS ==============
+
+  const clearSearch = () => {
+    search.value = '';
+  };
+
+  const handleSearchInput = (e) => {
+    search.value = e.target.value;
+  };
+
+  const handleKeypress = (e) => {
+    if (regex && regex.value) {
+      let regexp = regex.value;
+
+      if (typeof regexp === 'string') {
+        regexp = new RegExp(regexp);
+      }
+
+      if (!e.key.match(regexp)) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const handlePaste = (e) => {
+    if (regex && regex.value) {
+      let clipboardData = e.clipboardData || /* istanbul ignore next */ window.clipboardData;
+      let pastedData = clipboardData.getData('Text');
+
+      let regexp = regex.value;
+
+      if (typeof regexp === 'string') {
+        regexp = new RegExp(regexp);
+      }
+      
+      if (!pastedData.split('').every(c => !!c.match(regexp))) {
+        e.preventDefault();
+      }
+    }
+
+    context.emit('paste', e, $this);
+  };
+
+  // ============== WATCHERS ==============
+
+  (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(search, (val) => {
+    if (!isOpen.value && val) {
+      open();
+    }
+
+    context.emit('search-change', val, $this);
+  });
+
+  return {
+    search,
+    input,
+    clearSearch,
+    handleSearchInput,
+    handleKeypress,
+    handlePaste,
+  }
+}
+
+function usePointer$1 (props, context, dep)
+{
+  const { groupSelect, mode, groups, disabledProp } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.toRefs)(props);
+
+  // ================ DATA ================
+
+  const pointer = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+
+  // =============== METHODS ==============
+
+  const setPointer = (option) => {
+    if (option === undefined || (option !== null && option[disabledProp.value])) {
+      return
+    }
+
+    if (groups.value && option && option.group && (mode.value === 'single' || !groupSelect.value)) {
+      return
+    }
+
+    pointer.value = option;
+  };
+
+  const clearPointer = () => {
+    setPointer(null);
+  };
+
+  return {
+    pointer,
+    setPointer,
+    clearPointer,
+  }
+}
+
+function normalize (str, strict = true) {
+  return strict
+    ? String(str).toLowerCase().trim()
+    : String(str).normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim()
+}
+
+function isObject (variable) {
+  return Object.prototype.toString.call(variable) === '[object Object]'
+}
+
+function arraysEqual (array1, array2) {
+  const array2Sorted = array2.slice().sort();
+
+  return array1.length === array2.length && array1.slice().sort().every(function(value, index) {
+      return value === array2Sorted[index];
+  })
+}
+
+function useOptions (props, context, dep)
+{
+  const { 
+    options, mode, trackBy: trackBy_, limit, hideSelected, createTag, createOption: createOption_, label,
+    appendNewTag, appendNewOption: appendNewOption_, multipleLabel, object, loading, delay, resolveOnLoad,
+    minChars, filterResults, clearOnSearch, clearOnSelect, valueProp,
+    canDeselect, max, strict, closeOnSelect, groups: groupped, reverse, infinite,
+    groupOptions, groupHideEmpty, groupSelect, onCreate, disabledProp, searchStart,
+  } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.toRefs)(props);
+
+  const $this = (0,vue__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)().proxy;
+
+  // ============ DEPENDENCIES ============
+
+  const iv = dep.iv;
+  const ev = dep.ev;
+  const search = dep.search;
+  const clearSearch = dep.clearSearch;
+  const update = dep.update;
+  const pointer = dep.pointer;
+  const clearPointer = dep.clearPointer;
+  const focus = dep.focus;
+  const deactivate = dep.deactivate;
+  const close = dep.close;
+
+  // ================ DATA ================
+
+  // no export
+  // appendedOptions
+  const ap = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]);
+
+  // no export
+  // resolvedOptions
+  const ro = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]);
+
+  const resolving = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
+
+  // no export
+  const searchWatcher = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+
+  const offset = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(infinite.value && limit.value === -1 ? 10 : limit.value);
+
+  // ============== COMPUTED ==============
+
+  // no export
+  const createOption = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return createTag.value || createOption_.value || false
+  });
+
+  // no export
+  const appendNewOption = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    if (appendNewTag.value !== undefined) {
+      return appendNewTag.value
+    } else if (appendNewOption_.value !== undefined) {
+      return appendNewOption_.value
+    }
+
+    return true
+  });
+
+  // no export
+  // extendedOptions
+  const eo = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    if (groupped.value) {
+      let groups = ro.value || /* istanbul ignore next */ [];
+
+      let eo = [];
+
+      groups.forEach((group) => {
+        optionsToArray(group[groupOptions.value]).forEach((option) => {
+          eo.push(Object.assign({}, option, group[disabledProp.value] ? { [disabledProp.value]: true } : {}));
+        });
+      });
+
+      return eo
+    } else {
+      let eo = optionsToArray(ro.value || /* istanbul ignore next */ []);
+
+      if (ap.value.length) {
+        eo = eo.concat(ap.value);
+      }
+
+      return eo
+    }
+  });
+
+  const fg = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    if (!groupped.value) {
+      return []
+    }
+
+    return filterGroups((ro.value || /* istanbul ignore next */ []).map((group) => {
+      const arrayOptions = optionsToArray(group[groupOptions.value]);
+
+      return {
+        ...group,
+        group: true,
+        [groupOptions.value]: filterOptions(arrayOptions, false).map(o => Object.assign({}, o, group[disabledProp.value] ? { [disabledProp.value]: true } : {})),
+        __VISIBLE__: filterOptions(arrayOptions).map(o => Object.assign({}, o, group[disabledProp.value] ? { [disabledProp.value]: true } : {})),
+      }
+      // Difference between __VISIBLE__ and {groupOptions}: visible does not contain selected options when hideSelected=true
+    }))
+  });
+
+  // preFilteredOptions
+  const pfo = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    let options = eo.value;
+
+    if (reverse.value) {
+      options = options.reverse();
+    }
+
+    if (createdOption.value.length) {
+      options = createdOption.value.concat(options);
+    }
+
+    return filterOptions(options)
+  });
+
+  // filteredOptions
+  const fo = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    let options = pfo.value;
+
+    if (offset.value > 0) {
+      options = options.slice(0, offset.value);
+    }
+
+    return options
+  });
+
+  const hasSelected = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    switch (mode.value) {
+      case 'single':
+        return !isNullish(iv.value[valueProp.value])
+
+      case 'multiple':
+      case 'tags':
+        return !isNullish(iv.value) && iv.value.length > 0
+    }
+  });
+
+  const multipleLabelText = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return multipleLabel !== undefined && multipleLabel.value !== undefined
+      ? multipleLabel.value(iv.value, $this)
+      : (iv.value && iv.value.length > 1 ? `${iv.value.length} options selected` : `1 option selected`)
+  });
+
+  const noOptions = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return !eo.value.length && !resolving.value && !createdOption.value.length
+  });
+
+
+  const noResults = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return eo.value.length > 0 && fo.value.length == 0 && ((search.value && groupped.value) || !groupped.value)
+  });
+
+  // no export
+  const createdOption = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    if (createOption.value === false || !search.value) {
+      return []
+    }
+
+    return getOptionByTrackBy(search.value) !== -1 ? [] : [{
+      [valueProp.value]: search.value,
+      [label.value]: search.value,
+      [trackBy.value]: search.value,
+      __CREATE__: true,
+    }]
+  });
+
+  const trackBy = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return trackBy_.value || label.value
+  });
+
+  // no export
+  const nullValue = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    switch (mode.value) {
+      case 'single':
+        return null
+
+      case 'multiple':
+      case 'tags':
+        return []
+    }
+  });
+
+  const busy = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return loading.value || resolving.value
+  });
+
+  // =============== METHODS ==============
+
+  /**
+   * @param {array|object|string|number} option 
+   */
+  const select = (option) => {
+    if (typeof option !== 'object') {
+      option = getOption(option);
+    }
+
+    switch (mode.value) {
+      case 'single':
+        update(option);
+        break
+
+      case 'multiple':
+      case 'tags':
+        update((iv.value).concat(option));
+        break
+    }
+
+    context.emit('select', finalValue(option), option, $this);
+  };
+
+  const deselect = (option) => {
+    if (typeof option !== 'object') {
+      option = getOption(option);
+    }
+
+    switch (mode.value) {
+      case 'single':
+        clear();
+        break
+
+      case 'tags':
+      case 'multiple':
+        update(Array.isArray(option)
+          ? iv.value.filter(v => option.map(o => o[valueProp.value]).indexOf(v[valueProp.value]) === -1)
+          : iv.value.filter(v => v[valueProp.value] != option[valueProp.value]));
+        break
+    }
+
+    context.emit('deselect', finalValue(option), option, $this);
+  };
+
+  // no export
+  const finalValue = (option) => {
+    return object.value ? option : option[valueProp.value]
+  };
+
+  const remove = (option) => {
+    deselect(option);
+  };
+
+  const handleTagRemove = (option, e) => {
+    if (e.button !== 0) {
+      e.preventDefault();
+      return
+    }
+
+    remove(option);
+  };
+
+  const clear = () => {
+    context.emit('clear', $this);
+    update(nullValue.value);
+  };
+
+  const isSelected = (option) => {
+    if (option.group !== undefined) {
+      return mode.value === 'single' ? false : areAllSelected(option[groupOptions.value]) && option[groupOptions.value].length
+    }
+
+    switch (mode.value) {
+      case 'single':
+        return !isNullish(iv.value) && iv.value[valueProp.value] == option[valueProp.value]
+
+      case 'tags':
+      case 'multiple':
+        return !isNullish(iv.value) && iv.value.map(o => o[valueProp.value]).indexOf(option[valueProp.value]) !== -1
+    }
+  };
+
+  const isDisabled = (option) => {
+    return option[disabledProp.value] === true
+  };
+
+  const isMax = () => {
+    if (max === undefined || max.value === -1 || (!hasSelected.value && max.value > 0)) {
+      return false
+    }
+    
+    return iv.value.length >= max.value
+  };
+
+  const handleOptionClick = (option) => {
+    if (isDisabled(option)) {
+      return
+    }
+
+    if (onCreate && onCreate.value && !isSelected(option) && option.__CREATE__) {
+      option = { ...option };
+      delete option.__CREATE__;
+
+      option = onCreate.value(option, $this);
+      
+      if (option instanceof Promise) {
+        resolving.value = true;
+        option.then((result) => {
+          resolving.value = false;
+          handleOptionSelect(result);
+        });
+
+        return
+      } 
+    }
+
+    handleOptionSelect(option);
+  };
+
+  const handleOptionSelect = (option) => {
+    if (option.__CREATE__) {
+      option = { ...option };
+      delete option.__CREATE__;
+    }
+    
+    switch (mode.value) {
+      case 'single':
+        if (option && isSelected(option)) {
+          if (canDeselect.value) {
+            deselect(option);
+          }
+          return
+        }
+
+        if (option) {
+          handleOptionAppend(option);
+        }
+
+        /* istanbul ignore else */
+        if (clearOnSelect.value) {
+          clearSearch();
+        }
+
+        if (closeOnSelect.value) {
+          clearPointer();
+          close();
+        }
+
+        if (option) {
+          select(option);
+        }
+        break
+
+      case 'multiple':
+        if (option && isSelected(option)) {
+          deselect(option);
+          return
+        }
+
+        if (isMax()) {
+          return
+        }
+
+        if (option) {
+          handleOptionAppend(option);
+          select(option);
+        }
+
+        if (clearOnSelect.value) {
+          clearSearch();
+        }
+
+        if (hideSelected.value) {
+          clearPointer();
+        }
+
+        if (closeOnSelect.value) {
+          close();
+        }
+        break
+
+      case 'tags':
+        if (option && isSelected(option)) {
+          deselect(option);
+          return
+        }
+
+        if (isMax()) {
+          return
+        }
+
+        if (option) {
+          handleOptionAppend(option);
+        }
+
+        if (clearOnSelect.value) {
+          clearSearch();
+        }
+
+        if (option) {
+          select(option);
+        }
+
+        if (hideSelected.value) {
+          clearPointer();
+        }
+
+        if (closeOnSelect.value) {
+          close();
+        }
+        break
+    }
+
+    if (!closeOnSelect.value) {
+      focus();
+    }
+  };
+
+  const handleGroupClick = (group) => {
+    if (isDisabled(group) || mode.value === 'single' || !groupSelect.value) {
+      return
+    }
+
+    switch (mode.value) {
+      case 'multiple':
+      case 'tags':
+        if (areAllEnabledSelected(group[groupOptions.value])) {
+          deselect(group[groupOptions.value]);
+        } else {
+          select(group[groupOptions.value]
+            .filter(o => iv.value.map(v => v[valueProp.value]).indexOf(o[valueProp.value]) === -1)
+            .filter(o => !o[disabledProp.value])
+            .filter((o, k) => iv.value.length + 1 + k <= max.value || max.value === -1)
+          );
+        }
+        break
+    }
+
+    if (closeOnSelect.value) {
+      deactivate();
+    }
+  };
+
+  const handleOptionAppend = (option) => {
+    if (getOption(option[valueProp.value]) === undefined && createOption.value) {
+      context.emit('tag', option[valueProp.value], $this);
+      context.emit('option', option[valueProp.value], $this);
+
+      if (appendNewOption.value) {
+        appendOption(option);
+      }
+
+      clearSearch();
+    }
+  };
+
+  const selectAll = () => {
+    if (mode.value === 'single') {
+      return
+    }
+
+    select(fo.value);
+  };
+
+  // no export
+  const areAllEnabledSelected = (options) => {
+    return options.find(o => !isSelected(o) && !o[disabledProp.value]) === undefined
+  };
+
+  // no export
+  const areAllSelected = (options) => {
+    return options.find(o => !isSelected(o)) === undefined
+  };
+
+  const getOption = (val) => {
+    return eo.value[eo.value.map(o => String(o[valueProp.value])).indexOf(String(val))]
+  };
+
+  // no export
+  const getOptionByTrackBy = (val, norm) => {
+    return eo.value.map(o => parseInt(o[trackBy.value]) == o[trackBy.value] ? parseInt(o[trackBy.value]) : o[trackBy.value]).indexOf(
+      parseInt(val) == val ? parseInt(val) : val
+    )
+  };
+
+  // no export
+  const shouldHideOption = (option) => {
+    return ['tags', 'multiple'].indexOf(mode.value) !== -1 && hideSelected.value && isSelected(option)
+  };
+
+  // no export
+  const appendOption = (option) => {
+    ap.value.push(option);
+  };
+
+  // no export
+  const filterGroups = (groups) => {
+    // If the search has value we need to filter among 
+    // he ones that are visible to the user to avoid
+    // displaying groups which technically have options
+    // based on search but that option is already selected.
+    return groupHideEmpty.value
+      ? groups.filter(g => search.value
+          ? g.__VISIBLE__.length
+          : g[groupOptions.value].length
+        )
+      : groups.filter(g => search.value ? g.__VISIBLE__.length : true)
+  };
+
+  // no export
+  const filterOptions = (options, excludeHideSelected = true) => {
+    let fo = options;
+    
+    if (search.value && filterResults.value) {
+      fo = fo.filter((option) => {
+        return searchStart.value
+          ? normalize(option[trackBy.value], strict.value).startsWith(normalize(search.value, strict.value))
+          : normalize(option[trackBy.value], strict.value).indexOf(normalize(search.value, strict.value)) !== -1
+      });
+    }
+
+    if (hideSelected.value && excludeHideSelected) {
+      fo = fo.filter((option) => !shouldHideOption(option));
+    }
+
+    return fo
+  };
+
+  // no export
+  const optionsToArray = (options) => {
+    let uo = options;
+    
+    // Transforming an object to an array of objects
+    if (isObject(uo)) {
+      uo = Object.keys(uo).map((key) => {
+        let val = uo[key];
+
+        return { [valueProp.value]: key, [trackBy.value]: val, [label.value]: val}
+      });
+    }
+
+    // Transforming an plain arrays to an array of objects
+    uo = uo.map((val) => {
+      return typeof val === 'object' ? val : { [valueProp.value]: val, [trackBy.value]: val, [label.value]: val}
+    });
+
+    return uo
+  };
+
+  // no export
+  const initInternalValue = () => {
+    if (!isNullish(ev.value)) {
+      iv.value = makeInternal(ev.value);
+    }
+  };
+
+  const resolveOptions = (callback) => {
+    resolving.value = true;
+
+    return new Promise((resolve, reject) => {
+      options.value(search.value, $this).then((response) => {
+        ro.value = response || [];
+
+        if (typeof callback == 'function') {
+          callback(response);
+        }
+
+        resolving.value = false;
+      }).catch((e) => {
+        console.error(e);
+
+        ro.value = [];
+
+        resolving.value = false;
+      }).finally(() => {
+        resolve();
+      });
+    })
+  };
+
+  // no export
+  const refreshLabels = () => {
+    if (!hasSelected.value) {
+      return
+    }
+
+    if (mode.value === 'single') {
+      let option = getOption(iv.value[valueProp.value]);
+
+      /* istanbul ignore else */
+      if (option !== undefined) {
+        let newLabel = option[label.value];
+
+        iv.value[label.value] = newLabel;
+
+        if (object.value) {
+          ev.value[label.value] = newLabel;
+        }
+      }
+    } else {
+      iv.value.forEach((val, i) => {
+        let option = getOption(iv.value[i][valueProp.value]);
+
+        /* istanbul ignore else */
+        if (option !== undefined) {
+          let newLabel = option[label.value];
+
+          iv.value[i][label.value] = newLabel;
+
+          if (object.value) {
+            ev.value[i][label.value] = newLabel;
+          }
+        }
+      });
+    }
+  };
+
+  const refreshOptions = (callback) => {
+    resolveOptions(callback);
+  };
+
+  // no export
+  const makeInternal = (val) => {
+    if (isNullish(val)) {
+      return mode.value === 'single' ? {} : []
+    }
+
+    if (object.value) {
+      return val
+    }
+
+    // If external should be plain transform
+    // value object to plain values
+    return mode.value === 'single' ? getOption(val) || {} : val.filter(v => !! getOption(v)).map(v => getOption(v))
+  };
+
+  // no export
+  const initSearchWatcher = () => {
+    searchWatcher.value = (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(search, (query) => {
+      if (query.length < minChars.value || (!query && minChars.value !== 0)) {
+        return
+      }
+
+      resolving.value = true;
+
+      if (clearOnSearch.value) {
+        ro.value = [];
+      }
+      setTimeout(() => {
+        if (query != search.value) {
+          return
+        }
+
+        options.value(search.value, $this).then((response) => {
+          if (query == search.value || !search.value) {
+            ro.value = response;
+            pointer.value = fo.value.filter(o => o[disabledProp.value] !== true)[0] || null;
+            resolving.value = false;
+          }
+        }).catch( /* istanbul ignore next */ (e) => {
+          console.error(e);
+        });
+      }, delay.value);
+
+    }, { flush: 'sync' });
+  };
+
+  // ================ HOOKS ===============
+
+  if (mode.value !== 'single' && !isNullish(ev.value) && !Array.isArray(ev.value)) {
+    throw new Error(`v-model must be an array when using "${mode.value}" mode`)
+  }
+
+  if (options && typeof options.value == 'function') {
+    if (resolveOnLoad.value) {
+      resolveOptions(initInternalValue);
+    } else if (object.value == true) {
+      initInternalValue();
+    }
+  }
+  else {
+    ro.value = options.value;
+
+    initInternalValue();
+  }
+  
+  // ============== WATCHERS ==============
+
+  if (delay.value > -1) {
+    initSearchWatcher();
+  }
+
+  (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(delay, (value, old) => {
+    /* istanbul ignore else */
+    if (searchWatcher.value) {
+      searchWatcher.value();
+    }
+
+    if (value >= 0) {
+      initSearchWatcher();
+    }
+  });
+
+  (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(ev, (newValue) => {
+    if (isNullish(newValue)) {
+      iv.value = makeInternal(newValue);
+      return
+    }
+
+    switch (mode.value) {
+      case 'single':
+        if (object.value ? newValue[valueProp.value] != iv.value[valueProp.value] : newValue != iv.value[valueProp.value]) {
+          iv.value = makeInternal(newValue);
+        }
+        break
+
+      case 'multiple':
+      case 'tags':
+        if (!arraysEqual(object.value ? newValue.map(o => o[valueProp.value]) : newValue, iv.value.map(o => o[valueProp.value]))) {
+          iv.value = makeInternal(newValue);
+        }
+        break
+    }
+  }, { deep: true });
+
+  (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(options, (n, o) => {
+    if (typeof props.options === 'function') {
+      if (resolveOnLoad.value) {
+        resolveOptions();
+      }
+    } else {
+      ro.value = props.options;
+
+      if (!Object.keys(iv.value).length) {
+        initInternalValue();
+      }
+
+      refreshLabels();
+    }
+  });
+
+  (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(label, refreshLabels);
+
+  return {
+    pfo,
+    fo,
+    filteredOptions: fo,
+    hasSelected,
+    multipleLabelText,
+    eo,
+    extendedOptions: eo,
+    fg,
+    filteredGroups: fg,
+    noOptions,
+    noResults,
+    resolving,
+    busy,
+    offset,
+    select,
+    deselect,
+    remove,
+    selectAll,
+    clear,
+    isSelected,
+    isDisabled,
+    isMax,
+    getOption,
+    handleOptionClick,
+    handleGroupClick,
+    handleTagRemove,
+    refreshOptions,
+    resolveOptions,
+    refreshLabels,
+  }
+}
+
+function usePointer (props, context, dep)
+{
+  const {
+    valueProp, showOptions, searchable, groupLabel,
+    groups: groupped, mode, groupSelect, disabledProp,
+  } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.toRefs)(props);
+
+  // ============ DEPENDENCIES ============
+
+  const fo = dep.fo;
+  const fg = dep.fg;
+  const handleOptionClick = dep.handleOptionClick;
+  const handleGroupClick = dep.handleGroupClick;
+  const search = dep.search;
+  const pointer = dep.pointer;
+  const setPointer = dep.setPointer;
+  const clearPointer = dep.clearPointer;
+  const multiselect = dep.multiselect;
+  const isOpen = dep.isOpen;
+
+  // ============== COMPUTED ==============
+
+  // no export
+  const options = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return fo.value.filter(o => !o[disabledProp.value])
+  });
+
+  const groups = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return fg.value.filter(o => !o[disabledProp.value])
+  });
+
+  const canPointGroups = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return mode.value !== 'single' && groupSelect.value
+  });
+
+  const isPointerGroup = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return pointer.value && pointer.value.group
+  });
+
+  const currentGroup = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return getParentGroup(pointer.value)
+  });
+
+  const prevGroup = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    const group = isPointerGroup.value ? pointer.value : /* istanbul ignore next */ getParentGroup(pointer.value);
+    const groupIndex = groups.value.map(g => g[groupLabel.value]).indexOf(group[groupLabel.value]);
+    let prevGroup = groups.value[groupIndex - 1];
+
+    if (prevGroup === undefined) {
+      prevGroup = lastGroup.value;
+    }
+
+    return prevGroup
+  });
+  
+  const nextGroup = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    let nextIndex = groups.value.map(g => g.label).indexOf(isPointerGroup.value
+      ? pointer.value[groupLabel.value]
+      : getParentGroup(pointer.value)[groupLabel.value]) + 1;
+
+    if (groups.value.length <= nextIndex) {
+      nextIndex = 0;
+    }
+
+    return groups.value[nextIndex]
+  });
+
+  const lastGroup = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return [...groups.value].slice(-1)[0]
+  });
+  
+  const currentGroupFirstEnabledOption = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return pointer.value.__VISIBLE__.filter(o => !o[disabledProp.value])[0]
+  });
+
+  const currentGroupPrevEnabledOption = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    const options = currentGroup.value.__VISIBLE__.filter(o => !o[disabledProp.value]);
+    return options[options.map(o => o[valueProp.value]).indexOf(pointer.value[valueProp.value]) - 1]
+  });
+  
+  const currentGroupNextEnabledOption = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    const options = getParentGroup(pointer.value).__VISIBLE__.filter(o => !o[disabledProp.value]);
+    return options[options.map(o => o[valueProp.value]).indexOf(pointer.value[valueProp.value]) + 1]
+  });
+
+  const prevGroupLastEnabledOption = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return [...prevGroup.value.__VISIBLE__.filter(o => !o[disabledProp.value])].slice(-1)[0]
+  });
+
+  const lastGroupLastEnabledOption = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return [...lastGroup.value.__VISIBLE__.filter(o => !o[disabledProp.value])].slice(-1)[0]
+  });
+
+  // =============== METHODS ==============
+
+  const isPointed = (option) => {
+    return (!!pointer.value && (
+      (!option.group && pointer.value[valueProp.value] == option[valueProp.value]) ||
+      (option.group !== undefined && pointer.value[groupLabel.value] == option[groupLabel.value])
+    )) ? true : undefined
+  };
+
+  const setPointerFirst = () => {
+    setPointer(options.value[0] || null);
+  };
+
+  const selectPointer = () => {
+    if (!pointer.value || pointer.value[disabledProp.value] === true) {
+      return
+    }
+
+    if (isPointerGroup.value) {
+      handleGroupClick(pointer.value);
+    } else {
+      handleOptionClick(pointer.value);
+    }
+  };
+
+  const forwardPointer = () => {
+    if (pointer.value === null) {
+      setPointer((groupped.value && canPointGroups.value ? groups.value[0] : options.value[0]) || null);
+    }
+    else if (groupped.value && canPointGroups.value) {
+      let nextPointer = isPointerGroup.value ? currentGroupFirstEnabledOption.value : currentGroupNextEnabledOption.value;
+
+      if (nextPointer === undefined) {
+        nextPointer = nextGroup.value;
+      }
+
+      setPointer(nextPointer || /* istanbul ignore next */ null);
+    } else {
+      let next = options.value.map(o => o[valueProp.value]).indexOf(pointer.value[valueProp.value]) + 1;
+
+      if (options.value.length <= next) {
+        next = 0;
+      }
+
+      setPointer(options.value[next] || null);
+    }
+
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.nextTick)(() => {
+      adjustWrapperScrollToPointer();
+    });
+  };
+
+  const backwardPointer = () => {
+    if (pointer.value === null) {
+      let prevPointer = options.value[options.value.length - 1];
+
+      if (groupped.value && canPointGroups.value) {
+        prevPointer = lastGroupLastEnabledOption.value;
+
+        if (prevPointer === undefined) {
+          prevPointer = lastGroup.value;
+        }
+      }
+
+      setPointer(prevPointer  || null);
+    }
+    else if (groupped.value && canPointGroups.value) {
+      let prevPointer = isPointerGroup.value ? prevGroupLastEnabledOption.value : currentGroupPrevEnabledOption.value;
+
+      if (prevPointer === undefined) {
+        prevPointer = isPointerGroup.value ? prevGroup.value : currentGroup.value;
+      }
+
+      setPointer(prevPointer || /* istanbul ignore next */ null);
+    } else {
+      let prevIndex = options.value.map(o => o[valueProp.value]).indexOf(pointer.value[valueProp.value]) - 1;
+
+      if (prevIndex < 0) {
+        prevIndex = options.value.length - 1;
+      }
+
+      setPointer(options.value[prevIndex] || null);
+    }
+
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.nextTick)(() => {
+      adjustWrapperScrollToPointer();
+    });
+  };
+
+  const getParentGroup = (option) => {
+    return groups.value.find((group) => {
+      return group.__VISIBLE__.map(o => o[valueProp.value]).indexOf(option[valueProp.value]) !== -1
+    })
+  };
+
+  // no export
+  /* istanbul ignore next */
+  const adjustWrapperScrollToPointer = () => {
+    let pointedOption = multiselect.value.querySelector(`[data-pointed]`);
+
+    if (!pointedOption) {
+      return
+    }
+
+    let wrapper = pointedOption.parentElement.parentElement;
+
+    if (groupped.value) {
+      wrapper = isPointerGroup.value
+        ? pointedOption.parentElement.parentElement.parentElement
+        : pointedOption.parentElement.parentElement.parentElement.parentElement;
+    }
+
+    if (pointedOption.offsetTop + pointedOption.offsetHeight > wrapper.clientHeight + wrapper.scrollTop) {
+      wrapper.scrollTop = pointedOption.offsetTop + pointedOption.offsetHeight - wrapper.clientHeight;
+    }
+    
+    if (pointedOption.offsetTop < wrapper.scrollTop) {
+      wrapper.scrollTop = pointedOption.offsetTop;
+    }
+  };
+
+  // ============== WATCHERS ==============
+
+  (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(search, (val) => {
+    if (searchable.value) {
+      if (val.length && showOptions.value) {
+        setPointerFirst();
+      } else {
+        clearPointer();
+      }
+    }
+  });
+
+  (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(isOpen, (val) => {
+    if (val) {
+      let firstSelected = multiselect.value.querySelectorAll(`[data-selected]`)[0];
+
+      if (!firstSelected) {
+        return
+      }
+
+      let wrapper = firstSelected.parentElement.parentElement;
+      
+      (0,vue__WEBPACK_IMPORTED_MODULE_0__.nextTick)(() => {
+        /* istanbul ignore next */
+        if (wrapper.scrollTop > 0) {
+          return
+        }
+
+        wrapper.scrollTop = firstSelected.offsetTop;
+      });
+    }
+  });
+
+  return {
+    pointer,
+    canPointGroups,
+    isPointed,
+    setPointerFirst,
+    selectPointer,
+    forwardPointer,
+    backwardPointer,
+  }
+}
+
+function useDropdown (props, context, dep)
+{
+  const { disabled } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.toRefs)(props);
+
+  const $this = (0,vue__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)().proxy;
+
+  // ================ DATA ================
+
+  const isOpen = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
+
+  // =============== METHODS ==============
+
+  const open = () => {
+    if (isOpen.value || disabled.value) {
+      return
+    }
+
+    isOpen.value = true;
+    context.emit('open', $this);
+  };
+
+  const close = () => {
+    if (!isOpen.value) {
+      return
+    }
+
+    isOpen.value = false;
+    context.emit('close', $this);
+  };
+
+  return {
+    isOpen,
+    open,
+    close,
+  }
+}
+
+function useMultiselect (props, context, dep)
+{
+  const { searchable, disabled } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.toRefs)(props);
+
+  // ============ DEPENDENCIES ============
+
+  const input = dep.input;
+  const open = dep.open;
+  const close = dep.close;
+  const clearSearch = dep.clearSearch;
+  const isOpen = dep.isOpen;
+
+  // ================ DATA ================
+
+  const multiselect = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+  const tags = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+
+  const isActive = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(false);
+
+  // ============== COMPUTED ==============
+
+  const tabindex = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return searchable.value || disabled.value ? -1 : 0
+  });
+
+  // =============== METHODS ==============
+
+  const blur = () => {
+    if (searchable.value) {
+      input.value.blur();
+    }
+
+    multiselect.value.blur();
+  };
+
+  const focus = () => {
+    if (searchable.value && !disabled.value) {
+      input.value.focus();
+    }
+  };
+
+  const handleFocus = () => {
+    focus();
+  };
+
+  const activate = () => {
+    if (disabled.value) {
+      return
+    }
+
+    isActive.value = true;
+
+    open();
+  };
+
+  const deactivate = () => {
+    isActive.value = false;
+
+    setTimeout(() => {
+      if (!isActive.value) {
+        close();
+        clearSearch();
+      }
+    }, 1);
+  };
+
+  const handleCaretClick = () => {
+    deactivate();
+    blur();
+  };
+
+  /* istanbul ignore next */
+  const handleMousedown = (e) => {
+    if (isOpen.value && (e.target.isEqualNode(multiselect.value) || e.target.isEqualNode(tags.value))) {
+      setTimeout(() => {
+        deactivate();
+      }, 0);
+    } else if (document.activeElement.isEqualNode(multiselect.value) && !isOpen.value) {
+      activate();    
+    }
+  };
+
+  return {
+    multiselect,
+    tags,
+    tabindex,
+    isActive,
+    blur,
+    focus,
+    handleFocus,
+    activate,
+    deactivate,
+    handleCaretClick,
+    handleMousedown,
+  }
+}
+
+function useKeyboard (props, context, dep)
+{
+  const {
+    mode, addTagOn, openDirection, searchable,
+    showOptions, valueProp, groups: groupped,
+    addOptionOn: addOptionOn_, createTag, createOption: createOption_,
+    reverse,
+  } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.toRefs)(props);
+
+  const $this = (0,vue__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)().proxy;
+
+  // ============ DEPENDENCIES ============
+
+  const iv = dep.iv;
+  const update = dep.update;
+  const search = dep.search;
+  const setPointer = dep.setPointer;
+  const selectPointer = dep.selectPointer;
+  const backwardPointer = dep.backwardPointer;
+  const forwardPointer = dep.forwardPointer;
+  const isOpen = dep.isOpen;
+  const open = dep.open;
+  const blur = dep.blur;
+  const fo = dep.fo;
+
+  // ============== COMPUTED ==============
+
+  // no export
+  const createOption = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return createTag.value || createOption_.value || false
+  });
+
+  // no export
+  const addOptionOn = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    if (addTagOn.value !== undefined) {
+      return addTagOn.value
+    }
+    else if (addOptionOn_.value !== undefined) {
+      return addOptionOn_.value
+    }
+
+    return ['enter']
+  });
+
+  // =============== METHODS ==============
+
+  // no export
+  const preparePointer = () => {
+    // When options are hidden and creating tags is allowed
+    // no pointer will be set (because options are hidden).
+    // In such case we need to set the pointer manually to the 
+    // first option, which equals to the option created from
+    // the search value.
+    if (mode.value === 'tags' && !showOptions.value && createOption.value && searchable.value && !groupped.value) {
+      setPointer(fo.value[fo.value.map(o => o[valueProp.value]).indexOf(search.value)]);
+    }
+  };
+
+  const handleKeydown = (e) => {
+    context.emit('keydown', e, $this);
+
+    switch (e.key) {
+      case 'Backspace':
+        if (mode.value === 'single') {
+          return
+        }
+
+        if (searchable.value && [null, ''].indexOf(search.value) === -1) {
+          return
+        }
+
+        if (iv.value.length === 0) {
+          return
+        }
+        
+        update([...iv.value].slice(0,-1));
+        break
+
+      case 'Enter':
+        e.preventDefault();
+
+        if (addOptionOn.value.indexOf('enter') === -1 && createOption.value) {
+          return
+        }
+        
+        preparePointer();
+        selectPointer();
+        break
+
+      case ' ':
+        if (!createOption.value && !searchable.value) {
+          e.preventDefault();
+          
+          preparePointer();
+          selectPointer();
+          return
+        }
+
+        if (!createOption.value) {
+          return false
+        } 
+
+        if (addOptionOn.value.indexOf('space') === -1 && createOption.value) {
+          return
+        }
+
+        e.preventDefault();
+        
+        preparePointer();
+        selectPointer();
+        break
+      
+      case 'Tab':
+      case ';':
+      case ',':
+        if (addOptionOn.value.indexOf(e.key.toLowerCase()) === -1 || !createOption.value) {
+          return
+        }
+
+        preparePointer();
+        selectPointer();
+        e.preventDefault();
+        break
+
+      case 'Escape':
+        blur();
+        break
+
+      case 'ArrowUp':
+        e.preventDefault();
+
+        if (!showOptions.value) {
+          return
+        }
+
+        /* istanbul ignore else */
+        if (!isOpen.value) {
+          open();
+        }
+        
+        backwardPointer();
+        break
+
+      case 'ArrowDown':
+        e.preventDefault();
+
+        if (!showOptions.value) {
+          return
+        }
+
+        /* istanbul ignore else */
+        if (!isOpen.value) {
+          open();
+        }
+
+        forwardPointer();
+        break
+    }
+  };
+
+  const handleKeyup = (e) => {
+    context.emit('keyup', e, $this);
+  };
+
+  return {
+    handleKeydown,
+    handleKeyup,
+    preparePointer,
+  }
+}
+
+function useClasses (props, context, dependencies)
+{const { 
+    classes: classes_, disabled, openDirection, showOptions
+  } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.toRefs)(props);
+
+  // ============ DEPENDENCIES ============
+
+  const isOpen = dependencies.isOpen;
+  const isPointed = dependencies.isPointed;
+  const isSelected = dependencies.isSelected;
+  const isDisabled = dependencies.isDisabled;
+  const isActive = dependencies.isActive;
+  const canPointGroups = dependencies.canPointGroups;
+  const resolving = dependencies.resolving;
+  const fo = dependencies.fo;
+
+  const classes = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => ({
+    container: 'multiselect',
+    containerDisabled: 'is-disabled',
+    containerOpen: 'is-open',
+    containerOpenTop: 'is-open-top',
+    containerActive: 'is-active',
+    singleLabel: 'multiselect-single-label',
+    singleLabelText: 'multiselect-single-label-text',
+    multipleLabel: 'multiselect-multiple-label',
+    search: 'multiselect-search',
+    tags: 'multiselect-tags',
+    tag: 'multiselect-tag',
+    tagDisabled: 'is-disabled',
+    tagRemove: 'multiselect-tag-remove',
+    tagRemoveIcon: 'multiselect-tag-remove-icon',
+    tagsSearchWrapper: 'multiselect-tags-search-wrapper',
+    tagsSearch: 'multiselect-tags-search',
+    tagsSearchCopy: 'multiselect-tags-search-copy',
+    placeholder: 'multiselect-placeholder',
+    caret: 'multiselect-caret',
+    caretOpen: 'is-open',
+    clear: 'multiselect-clear',
+    clearIcon: 'multiselect-clear-icon',
+    spinner: 'multiselect-spinner',
+    inifinite: 'multiselect-inifite',
+    inifiniteSpinner: 'multiselect-inifite-spinner',
+    dropdown: 'multiselect-dropdown',
+    dropdownTop: 'is-top',
+    dropdownHidden: 'is-hidden',
+    options: 'multiselect-options',
+    optionsTop: 'is-top',
+    group: 'multiselect-group',
+    groupLabel: 'multiselect-group-label',
+    groupLabelPointable: 'is-pointable',
+    groupLabelPointed: 'is-pointed',
+    groupLabelSelected: 'is-selected',
+    groupLabelDisabled: 'is-disabled',
+    groupLabelSelectedPointed: 'is-selected is-pointed',
+    groupLabelSelectedDisabled: 'is-selected is-disabled',
+    groupOptions: 'multiselect-group-options',
+    option: 'multiselect-option',
+    optionPointed: 'is-pointed',
+    optionSelected: 'is-selected',
+    optionDisabled: 'is-disabled',
+    optionSelectedPointed: 'is-selected is-pointed',
+    optionSelectedDisabled: 'is-selected is-disabled',
+    noOptions: 'multiselect-no-options',
+    noResults: 'multiselect-no-results',
+    fakeInput: 'multiselect-fake-input',
+    spacer: 'multiselect-spacer',
+    ...classes_.value,
+  }));
+
+  // ============== COMPUTED ==============
+
+  const showDropdown = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return !!(isOpen.value && showOptions.value && (!resolving.value || (resolving.value && fo.value.length)))
+  });
+
+  const classList = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    const c = classes.value;
+
+    return {
+      container: [c.container]
+        .concat(disabled.value ? c.containerDisabled : [])
+        .concat(showDropdown.value && openDirection.value === 'top'  ? c.containerOpenTop : [])
+        .concat(showDropdown.value && openDirection.value !== 'top' ? c.containerOpen : [])
+        .concat(isActive.value ? c.containerActive : []),
+      spacer: c.spacer,
+      singleLabel: c.singleLabel,
+      singleLabelText: c.singleLabelText,
+      multipleLabel: c.multipleLabel,
+      search: c.search,
+      tags: c.tags,
+      tag: [c.tag]
+        .concat(disabled.value ? c.tagDisabled : []),
+      tagRemove: c.tagRemove,
+      tagRemoveIcon: c.tagRemoveIcon,
+      tagsSearchWrapper: c.tagsSearchWrapper,
+      tagsSearch: c.tagsSearch,
+      tagsSearchCopy: c.tagsSearchCopy,
+      placeholder: c.placeholder,
+      caret: [c.caret]
+        .concat(isOpen.value ? c.caretOpen : []),
+      clear: c.clear,
+      clearIcon: c.clearIcon,
+      spinner: c.spinner,
+      inifinite: c.inifinite,
+      inifiniteSpinner: c.inifiniteSpinner,
+      dropdown: [c.dropdown]
+        .concat(openDirection.value === 'top' ? c.dropdownTop : [])
+        .concat(!isOpen.value || !showOptions.value || !showDropdown.value ? c.dropdownHidden : []),
+      options: [c.options]
+        .concat(openDirection.value === 'top' ? c.optionsTop : []),
+      group: c.group,
+      groupLabel: (g) => {
+        let groupLabel = [c.groupLabel];
+
+        if (isPointed(g)) {
+          groupLabel.push(isSelected(g) ? c.groupLabelSelectedPointed : c.groupLabelPointed);
+        } else if (isSelected(g) && canPointGroups.value) {
+          groupLabel.push(isDisabled(g) ? c.groupLabelSelectedDisabled : c.groupLabelSelected);
+        } else if (isDisabled(g)) {
+          groupLabel.push(c.groupLabelDisabled);
+        }
+
+        if (canPointGroups.value) {
+          groupLabel.push(c.groupLabelPointable);
+        }
+
+        return groupLabel
+      },
+      groupOptions: c.groupOptions,
+      option: (o, g) => {
+        let option = [c.option];
+
+        if (isPointed(o)) {
+          option.push(isSelected(o) ? c.optionSelectedPointed : c.optionPointed);
+        } else if (isSelected(o)) {
+          option.push(isDisabled(o) ? c.optionSelectedDisabled : c.optionSelected);
+        } else if (isDisabled(o) || (g && isDisabled(g))) {
+          option.push(c.optionDisabled);
+        }
+
+        return option
+      },
+      noOptions: c.noOptions,
+      noResults: c.noResults,
+      fakeInput: c.fakeInput,
+    }
+  });
+
+  return {
+    classList,
+    showDropdown,
+  }
+}
+
+function useScroll$1 (props, context, dep)
+{
+  const {
+    limit, infinite,
+  } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.toRefs)(props);
+
+  // ============ DEPENDENCIES ============
+
+  const isOpen = dep.isOpen;
+  const offset = dep.offset;
+  const search = dep.search;
+  const pfo = dep.pfo;
+  const eo = dep.eo;
+
+  // ================ DATA ================
+
+  // no export
+  const observer = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+
+  const infiniteLoader = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+
+  // ============== COMPUTED ==============
+
+  const hasMore = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return offset.value < pfo.value.length
+  });
+
+  // =============== METHODS ==============
+
+  // no export
+  /* istanbul ignore next */
+  const handleIntersectionObserver = (entries) => {
+    const { isIntersecting, target } = entries[0];
+
+    if (isIntersecting) {
+      const parent = target.offsetParent;
+      const scrollTop = parent.scrollTop;
+
+      offset.value += limit.value == -1 ? 10 : limit.value;
+
+      (0,vue__WEBPACK_IMPORTED_MODULE_0__.nextTick)(() => {
+        parent.scrollTop = scrollTop;
+      });
+    }
+  };
+
+  const observe = () => {
+    /* istanbul ignore else */
+    if (isOpen.value && offset.value < pfo.value.length) {
+      observer.value.observe(infiniteLoader.value);
+    } else if (!isOpen.value && observer.value) {
+      observer.value.disconnect();
+    }
+  };
+
+  // ============== WATCHERS ==============
+
+  (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(isOpen, () => {
+    if (!infinite.value) {
+      return
+    }
+
+    observe();
+  });
+
+  (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(search, () => {
+    if (!infinite.value) {
+      return
+    }
+
+    offset.value = limit.value;
+
+    observe();
+  }, { flush: 'post' });
+
+  (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(eo, () => {
+    if (!infinite.value) {
+      return
+    }
+
+    observe();
+  }, { immediate: false, flush: 'post' });
+
+  // ================ HOOKS ===============
+
+  (0,vue__WEBPACK_IMPORTED_MODULE_0__.onMounted)(() => {
+    /* istanbul ignore else */
+    if (window && window.IntersectionObserver) {
+      observer.value = new IntersectionObserver(handleIntersectionObserver);
+    }
+  });
+
+  return {
+    hasMore,
+    infiniteLoader,
+  }
+}
+
+function useScroll (props, context, dep)
+{
+  const { placeholder, id, valueProp, label: labelProp, mode, groupLabel } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.toRefs)(props);
+
+  // ============ DEPENDENCIES ============
+
+  const pointer = dep.pointer;
+  const iv = dep.iv;
+  const isSelected = dep.isSelected;
+  const hasSelected = dep.hasSelected;
+  const multipleLabelText = dep.multipleLabelText;
+
+  // ================ DATA ================
+
+  const label = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+
+  // ============== COMPUTED ==============
+
+  const ariaOwns = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    let texts = [];
+
+    if (id && id.value) {
+      texts.push(id.value);
+    }
+
+    texts.push('multiselect-options');
+
+    return texts.join('-')
+  });
+
+  const ariaActiveDescendant = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    let texts = [];
+
+    if (id && id.value) {
+      texts.push(id.value);
+    }
+
+    texts.push('multiselect-option');
+
+    if (pointer.value && pointer.value[valueProp.value] !== undefined) {
+      texts.push(pointer.value[valueProp.value]);
+
+      return texts.join('-')
+    }
+  });
+
+  const ariaLabel = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    let texts = [];
+
+    /* istanbul ignore next */
+    if (label.value) {
+      texts.push(label.value);
+    }
+
+    if (placeholder.value && !hasSelected.value) {
+      texts.push(placeholder.value);
+    }
+
+    if (mode.value === 'single' && iv.value && iv.value[labelProp.value] !== undefined) {
+      texts.push(iv.value[labelProp.value]);
+    }
+
+    if (mode.value === 'multiple' && hasSelected.value) {
+      texts.push(multipleLabelText.value);
+    }
+
+    if (mode.value === 'tags' && hasSelected.value) {
+      texts.push(...iv.value.map(v => v[labelProp.value]));
+    }
+
+    return texts.join(', ')
+  });
+
+  const ariaPlaceholder = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return ariaLabel.value
+  });
+
+  // =============== METHODS ==============
+
+  const ariaOptionId = (option) => {
+    let texts = [];
+
+    if (id && id.value) {
+      texts.push(id.value);
+    }
+
+    texts.push('multiselect-option');
+
+    texts.push(option[valueProp.value]);
+
+    return texts.join('-')
+  };
+
+  const ariaOptionLabel = (option) => {
+    let texts = [];
+
+    if (isSelected(option)) {
+      texts.push('✓');
+    }
+
+    texts.push(option[labelProp.value]);
+
+    return texts.join(' ')
+  };
+
+  const ariaGroupLabel = (group) => {
+    let texts = [];
+
+    texts.push(group[groupLabel.value]);
+
+    return texts.join(' ')
+  };
+
+  // =============== HOOKS ================
+
+  (0,vue__WEBPACK_IMPORTED_MODULE_0__.onMounted)(() => {
+    /* istanbul ignore next */
+    if (id && id.value && document && document.querySelector) {
+      let forTag = document.querySelector(`[for="${id.value}"]`);
+      label.value = forTag ? forTag.innerText : null;
+    }
+  });
+
+  return {
+    ariaOwns,
+    ariaLabel,
+    ariaPlaceholder,
+    ariaActiveDescendant,
+    ariaOptionId,
+    ariaOptionLabel,
+    ariaGroupLabel,
+  }
+}
+
+function resolveDeps (props, context, features, deps = {}) {
+  features.forEach((composable) => {
+    /* istanbul ignore else */
+    if (composable) {
+      deps = {
+        ...deps,
+        ...composable(props, context, deps)
+      };
+    }
+
+  });
+  
+  return deps
+}
+
+var script = {
+    name: 'Multiselect',
+    emits: [
+      'paste', 'open', 'close', 'select', 'deselect', 
+      'input', 'search-change', 'tag', 'option', 'update:modelValue',
+      'change', 'clear', 'keydown', 'keyup',
+    ],
+    props: {
+      value: {
+        required: false,
+      },
+      modelValue: {
+        required: false,
+      },
+      options: {
+        type: [Array, Object, Function],
+        required: false,
+        default: () => ([])
+      },
+      id: {
+        type: [String, Number],
+        required: false,
+      },
+      name: {
+        type: [String, Number],
+        required: false,
+        default: 'multiselect',
+      },
+      disabled: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      label: {
+        type: String,
+        required: false,
+        default: 'label',
+      },
+      trackBy: {
+        type: String,
+        required: false,
+        default: undefined,
+      },
+      valueProp: {
+        type: String,
+        required: false,
+        default: 'value',
+      },
+      placeholder: {
+        type: String,
+        required: false,
+        default: null,
+      },
+      mode: {
+        type: String,
+        required: false,
+        default: 'single', // single|multiple|tags
+      },
+      searchable: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      limit: {
+        type: Number,
+        required: false,
+        default: -1,
+      },
+      hideSelected: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      createTag: {
+        type: Boolean,
+        required: false,
+        default: undefined,
+      },
+      createOption: {
+        type: Boolean,
+        required: false,
+        default: undefined,
+      },
+      appendNewTag: {
+        type: Boolean,
+        required: false,
+        default: undefined,
+      },
+      appendNewOption: {
+        type: Boolean,
+        required: false,
+        default: undefined,
+      },
+      addTagOn: {
+        type: Array,
+        required: false,
+        default: undefined,
+      },
+      addOptionOn: {
+        type: Array,
+        required: false,
+        default: undefined,
+      },
+      caret: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      loading: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      noOptionsText: {
+        type: String,
+        required: false,
+        default: 'The list is empty',
+      },
+      noResultsText: {
+        type: String,
+        required: false,
+        default: 'No results found',
+      },
+      multipleLabel: {
+        type: Function,
+        required: false,
+      },
+      object: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      delay: {
+        type: Number,
+        required: false,
+        default: -1,
+      },
+      minChars: {
+        type: Number,
+        required: false,
+        default: 0,
+      },
+      resolveOnLoad: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      filterResults: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      clearOnSearch: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      clearOnSelect: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      canDeselect: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      canClear: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      max: {
+        type: Number,
+        required: false,
+        default: -1,
+      },
+      showOptions: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      required: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      openDirection: {
+        type: String,
+        required: false,
+        default: 'bottom',
+      },
+      nativeSupport: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      classes: {
+        type: Object,
+        required: false,
+        default: () => ({})
+      },
+      strict: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      closeOnSelect: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      autocomplete: {
+        type: String,
+        required: false,
+      },
+      groups: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      groupLabel: {
+        type: String,
+        required: false,
+        default: 'label',
+      },
+      groupOptions: {
+        type: String,
+        required: false,
+        default: 'options',
+      },
+      groupHideEmpty: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      groupSelect: {
+        type: Boolean,
+        required: false,
+        default: true,
+      },
+      inputType: {
+        type: String,
+        required: false,
+        default: 'text',
+      },
+      attrs: {
+        required: false,
+        type: Object,
+        default: () => ({}),
+      },
+      onCreate: {
+        required: false,
+        type: Function,
+      },
+      disabledProp: {
+        type: String,
+        required: false,
+        default: 'disabled',
+      },
+      searchStart: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      reverse: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      regex: {
+        type: [Object, String, RegExp],
+        required: false,
+        default: undefined,
+      },
+      rtl: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+      infinite: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+    },
+    setup(props, context)
+    { 
+      return resolveDeps(props, context, [
+        useValue,
+        usePointer$1,
+        useDropdown,
+        useSearch,
+        useData,
+        useMultiselect,
+        useOptions,
+        useScroll$1,
+        usePointer,
+        useKeyboard,
+        useClasses,
+        useScroll,
+      ])
+    }
+  };
+
+const _hoisted_1 = ["tabindex", "id", "dir", "aria-owns", "aria-expanded", "aria-label", "aria-placeholder", "aria-activedescendant"];
+const _hoisted_2 = ["type", "modelValue", "value", "autocomplete", "id", "aria-owns", "aria-expanded", "aria-label", "aria-placeholder", "aria-activedescendant"];
+const _hoisted_3 = ["onClick"];
+const _hoisted_4 = ["type", "modelValue", "value", "id", "autocomplete", "aria-owns", "aria-expanded", "aria-label", "aria-placeholder", "aria-activedescendant"];
+const _hoisted_5 = ["innerHTML"];
+const _hoisted_6 = ["innerHTML"];
+const _hoisted_7 = ["id"];
+const _hoisted_8 = ["data-pointed", "onMouseenter", "onClick"];
+const _hoisted_9 = ["innerHTML"];
+const _hoisted_10 = ["aria-label"];
+const _hoisted_11 = ["data-pointed", "data-selected", "id", "aria-label", "onMouseenter", "onClick"];
+const _hoisted_12 = ["innerHTML"];
+const _hoisted_13 = ["id", "aria-label", "data-pointed", "data-selected", "onMouseenter", "onClick"];
+const _hoisted_14 = ["innerHTML"];
+const _hoisted_15 = ["innerHTML"];
+const _hoisted_16 = ["innerHTML"];
+const _hoisted_17 = ["value"];
+const _hoisted_18 = ["name", "value"];
+const _hoisted_19 = ["name", "value"];
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
+    ref: "multiselect",
+    tabindex: _ctx.tabindex,
+    class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.container),
+    id: $props.searchable ? undefined : $props.id,
+    dir: $props.rtl ? 'rtl' : undefined,
+    "aria-owns": _ctx.ariaOwns,
+    "aria-expanded": _ctx.isOpen,
+    "aria-label": _ctx.ariaLabel,
+    "aria-placeholder": _ctx.ariaPlaceholder,
+    "aria-activedescendant": _ctx.ariaActiveDescendant,
+    onFocusin: _cache[8] || (_cache[8] = (...args) => (_ctx.activate && _ctx.activate(...args))),
+    onFocusout: _cache[9] || (_cache[9] = (...args) => (_ctx.deactivate && _ctx.deactivate(...args))),
+    onKeydown: _cache[10] || (_cache[10] = (...args) => (_ctx.handleKeydown && _ctx.handleKeydown(...args))),
+    onKeyup: _cache[11] || (_cache[11] = (...args) => (_ctx.handleKeyup && _ctx.handleKeyup(...args))),
+    onFocus: _cache[12] || (_cache[12] = (...args) => (_ctx.handleFocus && _ctx.handleFocus(...args))),
+    onMousedown: _cache[13] || (_cache[13] = (...args) => (_ctx.handleMousedown && _ctx.handleMousedown(...args))),
+    role: "combobox"
+  }, [
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Search "),
+    ($props.mode !== 'tags' && $props.searchable && !$props.disabled)
+      ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("input", (0,vue__WEBPACK_IMPORTED_MODULE_0__.mergeProps)({
+          key: 0,
+          type: $props.inputType,
+          modelValue: _ctx.search,
+          value: _ctx.search,
+          class: _ctx.classList.search,
+          autocomplete: $props.autocomplete,
+          id: $props.searchable ? $props.id : undefined
+        }, $props.attrs, {
+          "aria-owns": _ctx.ariaOwns,
+          "aria-expanded": _ctx.isOpen,
+          "aria-label": _ctx.ariaLabel,
+          "aria-placeholder": _ctx.ariaPlaceholder,
+          "aria-activedescendant": _ctx.ariaActiveDescendant,
+          onInput: _cache[0] || (_cache[0] = (...args) => (_ctx.handleSearchInput && _ctx.handleSearchInput(...args))),
+          onKeypress: _cache[1] || (_cache[1] = (...args) => (_ctx.handleKeypress && _ctx.handleKeypress(...args))),
+          onPaste: _cache[2] || (_cache[2] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)((...args) => (_ctx.handlePaste && _ctx.handlePaste(...args)), ["stop"])),
+          ref: "input",
+          role: "combobox"
+        }), null, 16 /* FULL_PROPS */, _hoisted_2))
+      : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Tags (with search) "),
+    ($props.mode == 'tags')
+      ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
+          key: 1,
+          class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.tags)
+        }, [
+          ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.iv, (option, i, key) => {
+            return (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "tag", {
+              option: option,
+              handleTagRemove: _ctx.handleTagRemove,
+              disabled: $props.disabled
+            }, () => [
+              ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", {
+                class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.tag),
+                key: key
+              }, [
+                (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(option[$props.label]) + " ", 1 /* TEXT */),
+                (!$props.disabled)
+                  ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", {
+                      key: 0,
+                      class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.tagRemove),
+                      onClick: $event => (_ctx.handleTagRemove(option, $event))
+                    }, [
+                      (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+                        class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.tagRemoveIcon)
+                      }, null, 2 /* CLASS */)
+                    ], 10 /* CLASS, PROPS */, _hoisted_3))
+                  : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)
+              ], 2 /* CLASS */))
+            ])
+          }), 256 /* UNKEYED_FRAGMENT */)),
+          (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+            class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.tagsSearchWrapper),
+            ref: "tags"
+          }, [
+            (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Used for measuring search width "),
+            (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+              class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.tagsSearchCopy)
+            }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(_ctx.search), 3 /* TEXT, CLASS */),
+            (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Actual search input "),
+            ($props.searchable && !$props.disabled)
+              ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("input", (0,vue__WEBPACK_IMPORTED_MODULE_0__.mergeProps)({
+                  key: 0,
+                  type: $props.inputType,
+                  modelValue: _ctx.search,
+                  value: _ctx.search,
+                  class: _ctx.classList.tagsSearch,
+                  id: $props.searchable ? $props.id : undefined,
+                  autocomplete: $props.autocomplete
+                }, $props.attrs, {
+                  "aria-owns": _ctx.ariaOwns,
+                  "aria-expanded": _ctx.isOpen,
+                  "aria-label": _ctx.ariaLabel,
+                  "aria-placeholder": _ctx.ariaPlaceholder,
+                  "aria-activedescendant": _ctx.ariaActiveDescendant,
+                  onInput: _cache[3] || (_cache[3] = (...args) => (_ctx.handleSearchInput && _ctx.handleSearchInput(...args))),
+                  onKeypress: _cache[4] || (_cache[4] = (...args) => (_ctx.handleKeypress && _ctx.handleKeypress(...args))),
+                  onPaste: _cache[5] || (_cache[5] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)((...args) => (_ctx.handlePaste && _ctx.handlePaste(...args)), ["stop"])),
+                  ref: "input",
+                  role: "combobox"
+                }), null, 16 /* FULL_PROPS */, _hoisted_4))
+              : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)
+          ], 2 /* CLASS */)
+        ], 2 /* CLASS */))
+      : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Single label "),
+    ($props.mode == 'single' && _ctx.hasSelected && !_ctx.search && _ctx.iv)
+      ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "singlelabel", {
+          key: 2,
+          value: _ctx.iv
+        }, () => [
+          (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+            class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.singleLabel)
+          }, [
+            (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+              class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.singleLabelText),
+              innerHTML: _ctx.iv[$props.label]
+            }, null, 10 /* CLASS, PROPS */, _hoisted_5)
+          ], 2 /* CLASS */)
+        ])
+      : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Multiple label "),
+    ($props.mode == 'multiple' && _ctx.hasSelected && !_ctx.search)
+      ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "multiplelabel", {
+          key: 3,
+          values: _ctx.iv
+        }, () => [
+          (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+            class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.multipleLabel),
+            innerHTML: _ctx.multipleLabelText
+          }, null, 10 /* CLASS, PROPS */, _hoisted_6)
+        ])
+      : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Placeholder "),
+    ($props.placeholder && !_ctx.hasSelected && !_ctx.search)
+      ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "placeholder", { key: 4 }, () => [
+          (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+            class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.placeholder)
+          }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.placeholder), 3 /* TEXT, CLASS */)
+        ])
+      : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Spinner "),
+    ($props.loading || _ctx.resolving)
+      ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "spinner", { key: 5 }, () => [
+          (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+            class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.spinner)
+          }, null, 2 /* CLASS */)
+        ])
+      : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Clear "),
+    (_ctx.hasSelected && !$props.disabled && $props.canClear && !_ctx.busy)
+      ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "clear", {
+          key: 6,
+          clear: _ctx.clear
+        }, () => [
+          (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+            class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.clear),
+            onClick: _cache[6] || (_cache[6] = (...args) => (_ctx.clear && _ctx.clear(...args)))
+          }, [
+            (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+              class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.clearIcon)
+            }, null, 2 /* CLASS */)
+          ], 2 /* CLASS */)
+        ])
+      : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Caret "),
+    ($props.caret && $props.showOptions)
+      ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "caret", { key: 7 }, () => [
+          (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+            class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.caret),
+            onClick: _cache[7] || (_cache[7] = (...args) => (_ctx.handleCaretClick && _ctx.handleCaretClick(...args)))
+          }, null, 2 /* CLASS */)
+        ])
+      : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Options "),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+      class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.dropdown),
+      tabindex: "-1"
+    }, [
+      (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "beforelist", { options: _ctx.fo }),
+      (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", {
+        class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.options),
+        id: _ctx.ariaOwns,
+        role: "listbox"
+      }, [
+        ($props.groups)
+          ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, { key: 0 }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.fg, (group, i, key) => {
+              return ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", {
+                class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.group),
+                key: key
+              }, [
+                (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+                  class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.groupLabel(group)),
+                  "data-pointed": _ctx.isPointed(group),
+                  onMouseenter: $event => (_ctx.setPointer(group)),
+                  onClick: $event => (_ctx.handleGroupClick(group)),
+                  role: "none"
+                }, [
+                  (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "grouplabel", {
+                    group: group,
+                    isSelected: _ctx.isSelected,
+                    isPointed: _ctx.isPointed
+                  }, () => [
+                    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+                      innerHTML: group[$props.groupLabel]
+                    }, null, 8 /* PROPS */, _hoisted_9)
+                  ])
+                ], 42 /* CLASS, PROPS, HYDRATE_EVENTS */, _hoisted_8),
+                (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", {
+                  class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.groupOptions),
+                  "aria-label": _ctx.ariaGroupLabel(group),
+                  role: "group"
+                }, [
+                  ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(group.__VISIBLE__, (option, i, key) => {
+                    return ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", {
+                      class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.option(option, group)),
+                      key: key,
+                      "data-pointed": _ctx.isPointed(option),
+                      "data-selected": _ctx.isSelected(option) || undefined,
+                      id: _ctx.ariaOptionId(option),
+                      "aria-label": _ctx.ariaOptionLabel(option),
+                      onMouseenter: $event => (_ctx.setPointer(option)),
+                      onClick: $event => (_ctx.handleOptionClick(option)),
+                      role: "option"
+                    }, [
+                      (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "option", {
+                        option: option,
+                        isSelected: _ctx.isSelected,
+                        isPointed: _ctx.isPointed,
+                        search: _ctx.search
+                      }, () => [
+                        (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+                          innerHTML: option[$props.label]
+                        }, null, 8 /* PROPS */, _hoisted_12)
+                      ])
+                    ], 42 /* CLASS, PROPS, HYDRATE_EVENTS */, _hoisted_11))
+                  }), 128 /* KEYED_FRAGMENT */))
+                ], 10 /* CLASS, PROPS */, _hoisted_10)
+              ], 2 /* CLASS */))
+            }), 128 /* KEYED_FRAGMENT */))
+          : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, { key: 1 }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.fo, (option, i, key) => {
+              return ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", {
+                id: _ctx.ariaOptionId(option),
+                "aria-label": _ctx.ariaOptionLabel(option),
+                class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.option(option)),
+                key: key,
+                "data-pointed": _ctx.isPointed(option),
+                "data-selected": _ctx.isSelected(option) || undefined,
+                onMouseenter: $event => (_ctx.setPointer(option)),
+                onClick: $event => (_ctx.handleOptionClick(option)),
+                role: "option"
+              }, [
+                (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "option", {
+                  option: option,
+                  isSelected: _ctx.isSelected,
+                  isPointed: _ctx.isPointed,
+                  search: _ctx.search
+                }, () => [
+                  (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+                    innerHTML: option[$props.label]
+                  }, null, 8 /* PROPS */, _hoisted_14)
+                ])
+              ], 42 /* CLASS, PROPS, HYDRATE_EVENTS */, _hoisted_13))
+            }), 128 /* KEYED_FRAGMENT */))
+      ], 10 /* CLASS, PROPS */, _hoisted_7),
+      (_ctx.noOptions)
+        ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "nooptions", { key: 0 }, () => [
+            (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+              class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.noOptions),
+              innerHTML: $props.noOptionsText
+            }, null, 10 /* CLASS, PROPS */, _hoisted_15)
+          ])
+        : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+      (_ctx.noResults)
+        ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "noresults", { key: 1 }, () => [
+            (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+              class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.noResults),
+              innerHTML: $props.noResultsText
+            }, null, 10 /* CLASS, PROPS */, _hoisted_16)
+          ])
+        : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+      ($props.infinite && _ctx.hasMore)
+        ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
+            key: 2,
+            class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.inifinite),
+            ref: "infiniteLoader"
+          }, [
+            (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "infinite", {}, () => [
+              (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+                class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.inifiniteSpinner)
+              }, null, 2 /* CLASS */)
+            ])
+          ], 2 /* CLASS */))
+        : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+      (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "afterlist", { options: _ctx.fo })
+    ], 2 /* CLASS */),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Hacky input element to show HTML5 required warning "),
+    ($props.required)
+      ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("input", {
+          key: 8,
+          class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.fakeInput),
+          tabindex: "-1",
+          value: _ctx.textValue,
+          required: ""
+        }, null, 10 /* CLASS, PROPS */, _hoisted_17))
+      : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Native input support "),
+    ($props.nativeSupport)
+      ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, { key: 9 }, [
+          ($props.mode == 'single')
+            ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("input", {
+                key: 0,
+                type: "hidden",
+                name: $props.name,
+                value: _ctx.plainValue !== undefined ? _ctx.plainValue : ''
+              }, null, 8 /* PROPS */, _hoisted_18))
+            : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, { key: 1 }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.plainValue, (v, i) => {
+                return ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("input", {
+                  type: "hidden",
+                  name: `${$props.name}[]`,
+                  value: v,
+                  key: i
+                }, null, 8 /* PROPS */, _hoisted_19))
+              }), 128 /* KEYED_FRAGMENT */))
+        ], 64 /* STABLE_FRAGMENT */))
+      : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Create height for empty input "),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+      class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(_ctx.classList.spacer)
+    }, null, 2 /* CLASS */)
+  ], 42 /* CLASS, PROPS, HYDRATE_EVENTS */, _hoisted_1))
+}
+
+script.render = render;
+script.__file = "src/Multiselect.vue";
+
+
+
+
+/***/ }),
+
 /***/ "./node_modules/axios/index.js":
 /*!*************************************!*\
   !*** ./node_modules/axios/index.js ***!
@@ -24016,18 +29359,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _vue_reactivity__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @vue/reactivity */ "./node_modules/@vue/reactivity/dist/reactivity.esm-bundler.js");
+/* harmony import */ var _vue_reactivity__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @vue/reactivity */ "./node_modules/@vue/reactivity/dist/reactivity.esm-bundler.js");
 /* harmony import */ var mdb_vue_ui_kit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! mdb-vue-ui-kit */ "./node_modules/mdb-vue-ui-kit/js/mdb.umd.min.js");
 /* harmony import */ var mdb_vue_ui_kit__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(mdb_vue_ui_kit__WEBPACK_IMPORTED_MODULE_0__);
-Object(function webpackMissingModule() { var e = new Error("Cannot find module '@vueform/multiselect'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
-Object(function webpackMissingModule() { var e = new Error("Cannot find module '@vueform/multiselect/themes/default.css'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
-/* harmony import */ var _api__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../api */ "./resources/js/api.js");
-/* harmony import */ var _loaders_CategoriesLoader_vue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../loaders/CategoriesLoader.vue */ "./resources/js/components/loaders/CategoriesLoader.vue");
-/* harmony import */ var _modals_ConfirmationModal_vue__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../modals/ConfirmationModal.vue */ "./resources/js/components/modals/ConfirmationModal.vue");
-/* harmony import */ var _vue_runtime_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @vue/runtime-core */ "./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js");
-/* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm-bundler.js");
-/* harmony import */ var vue_router__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! vue-router */ "./node_modules/vue-router/dist/vue-router.esm-bundler.js");
-/* harmony import */ var vue_toastification__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! vue-toastification */ "./node_modules/vue-toastification/dist/index.mjs");
+/* harmony import */ var _vueform_multiselect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @vueform/multiselect */ "./node_modules/@vueform/multiselect/dist/multiselect.js");
+/* harmony import */ var _vueform_multiselect_themes_default_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @vueform/multiselect/themes/default.css */ "./node_modules/@vueform/multiselect/themes/default.css");
+/* harmony import */ var _api__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../api */ "./resources/js/api.js");
+/* harmony import */ var _loaders_CategoriesLoader_vue__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../loaders/CategoriesLoader.vue */ "./resources/js/components/loaders/CategoriesLoader.vue");
+/* harmony import */ var _modals_ConfirmationModal_vue__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../modals/ConfirmationModal.vue */ "./resources/js/components/modals/ConfirmationModal.vue");
+/* harmony import */ var _vue_runtime_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @vue/runtime-core */ "./node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js");
+/* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm-bundler.js");
+/* harmony import */ var vue_router__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! vue-router */ "./node_modules/vue-router/dist/vue-router.esm-bundler.js");
+/* harmony import */ var vue_toastification__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! vue-toastification */ "./node_modules/vue-toastification/dist/index.mjs");
 
 
 
@@ -24043,28 +29386,28 @@ Object(function webpackMissingModule() { var e = new Error("Cannot find module '
   setup: function setup(__props, _ref) {
     var expose = _ref.expose;
     expose();
-    var allCategories = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_6__.ref)([]);
-    var selectedCategories = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_6__.ref)([]);
-    var options = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_6__.ref)([]);
-    var categories = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_6__.ref)([]);
-    var loading = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_6__.ref)(true);
-    var AddNewCategoryModal = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_6__.ref)(false);
-    var category = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_6__.reactive)({
+    var allCategories = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_7__.ref)([]);
+    var selectedCategories = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_7__.ref)([]);
+    var options = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_7__.ref)([]);
+    var categories = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_7__.ref)([]);
+    var loading = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_7__.ref)(true);
+    var AddNewCategoryModal = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_7__.ref)(false);
+    var category = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_7__.reactive)({
       name: "",
       id: ""
     });
-    var deletedItem = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_6__.reactive)({
+    var deletedItem = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_7__.reactive)({
       label: "",
       id: ""
     });
-    var addedCategory = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_6__.ref)("");
-    var errors = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_6__.ref)(null);
-    var store = (0,vuex__WEBPACK_IMPORTED_MODULE_7__.useStore)();
-    var router = (0,vue_router__WEBPACK_IMPORTED_MODULE_8__.useRouter)();
-    var toast = (0,vue_toastification__WEBPACK_IMPORTED_MODULE_5__.useToast)();
+    var addedCategory = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_7__.ref)("");
+    var errors = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_7__.ref)(null);
+    var store = (0,vuex__WEBPACK_IMPORTED_MODULE_8__.useStore)();
+    var router = (0,vue_router__WEBPACK_IMPORTED_MODULE_9__.useRouter)();
+    var toast = (0,vue_toastification__WEBPACK_IMPORTED_MODULE_6__.useToast)();
 
     var getCategories = function getCategories() {
-      (0,_api__WEBPACK_IMPORTED_MODULE_2__.getUserCategories)().then(function (_ref2) {
+      (0,_api__WEBPACK_IMPORTED_MODULE_3__.getUserCategories)().then(function (_ref2) {
         var data = _ref2.data;
         categories.value = data.data.data;
         loading.value = false;
@@ -24073,7 +29416,7 @@ Object(function webpackMissingModule() { var e = new Error("Cannot find module '
 
     var addNewCategory = function addNewCategory() {
       AddNewCategoryModal.value = true;
-      (0,_api__WEBPACK_IMPORTED_MODULE_2__.getAllCategories)().then(function (res) {
+      (0,_api__WEBPACK_IMPORTED_MODULE_3__.getAllCategories)().then(function (res) {
         allCategories.value = res.data.data;
         allCategories.value.map(function (item) {
           options.value.push({
@@ -24084,7 +29427,7 @@ Object(function webpackMissingModule() { var e = new Error("Cannot find module '
       });
     };
 
-    (0,_vue_runtime_core__WEBPACK_IMPORTED_MODULE_9__.watchEffect)(function () {
+    (0,_vue_runtime_core__WEBPACK_IMPORTED_MODULE_10__.watchEffect)(function () {
       if (store.state.auth) {
         getCategories();
 
@@ -24103,7 +29446,7 @@ Object(function webpackMissingModule() { var e = new Error("Cannot find module '
         action: "bind",
         category_ids: selectedCategories.value
       };
-      (0,_api__WEBPACK_IMPORTED_MODULE_2__.createCategory)(categoryData).then(function (_ref3) {
+      (0,_api__WEBPACK_IMPORTED_MODULE_3__.createCategory)(categoryData).then(function (_ref3) {
         var data = _ref3.data;
         AddNewCategoryModal.value = false;
         errors.value = null;
@@ -24141,23 +29484,23 @@ Object(function webpackMissingModule() { var e = new Error("Cannot find module '
       addNewCategory: addNewCategory,
       submitCategory: submitCategory,
       deleteCategory: deleteCategory,
-      reactive: _vue_reactivity__WEBPACK_IMPORTED_MODULE_6__.reactive,
-      ref: _vue_reactivity__WEBPACK_IMPORTED_MODULE_6__.ref,
+      reactive: _vue_reactivity__WEBPACK_IMPORTED_MODULE_7__.reactive,
+      ref: _vue_reactivity__WEBPACK_IMPORTED_MODULE_7__.ref,
       MDBModal: mdb_vue_ui_kit__WEBPACK_IMPORTED_MODULE_0__.MDBModal,
       MDBModalHeader: mdb_vue_ui_kit__WEBPACK_IMPORTED_MODULE_0__.MDBModalHeader,
       MDBModalTitle: mdb_vue_ui_kit__WEBPACK_IMPORTED_MODULE_0__.MDBModalTitle,
       MDBModalBody: mdb_vue_ui_kit__WEBPACK_IMPORTED_MODULE_0__.MDBModalBody,
       MDBInput: mdb_vue_ui_kit__WEBPACK_IMPORTED_MODULE_0__.MDBInput,
-      Multiselect: Object(function webpackMissingModule() { var e = new Error("Cannot find module '@vueform/multiselect'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()),
-      createCategory: _api__WEBPACK_IMPORTED_MODULE_2__.createCategory,
-      getAllCategories: _api__WEBPACK_IMPORTED_MODULE_2__.getAllCategories,
-      getUserCategories: _api__WEBPACK_IMPORTED_MODULE_2__.getUserCategories,
-      CategoriesLoader: _loaders_CategoriesLoader_vue__WEBPACK_IMPORTED_MODULE_3__["default"],
-      ConfirmationModal: _modals_ConfirmationModal_vue__WEBPACK_IMPORTED_MODULE_4__["default"],
-      watchEffect: _vue_runtime_core__WEBPACK_IMPORTED_MODULE_9__.watchEffect,
-      useStore: vuex__WEBPACK_IMPORTED_MODULE_7__.useStore,
-      useRouter: vue_router__WEBPACK_IMPORTED_MODULE_8__.useRouter,
-      useToast: vue_toastification__WEBPACK_IMPORTED_MODULE_5__.useToast
+      Multiselect: _vueform_multiselect__WEBPACK_IMPORTED_MODULE_1__["default"],
+      createCategory: _api__WEBPACK_IMPORTED_MODULE_3__.createCategory,
+      getAllCategories: _api__WEBPACK_IMPORTED_MODULE_3__.getAllCategories,
+      getUserCategories: _api__WEBPACK_IMPORTED_MODULE_3__.getUserCategories,
+      CategoriesLoader: _loaders_CategoriesLoader_vue__WEBPACK_IMPORTED_MODULE_4__["default"],
+      ConfirmationModal: _modals_ConfirmationModal_vue__WEBPACK_IMPORTED_MODULE_5__["default"],
+      watchEffect: _vue_runtime_core__WEBPACK_IMPORTED_MODULE_10__.watchEffect,
+      useStore: vuex__WEBPACK_IMPORTED_MODULE_8__.useStore,
+      useRouter: vue_router__WEBPACK_IMPORTED_MODULE_9__.useRouter,
+      useToast: vue_toastification__WEBPACK_IMPORTED_MODULE_6__.useToast
     };
     Object.defineProperty(__returned__, '__isScriptSetup', {
       enumerable: false,
@@ -32473,7 +37816,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _store__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./store */ "./resources/js/store/index.js");
 /* harmony import */ var vue3_geolocation__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! vue3-geolocation */ "./node_modules/vue3-geolocation/dist/vue3-geolocation.js");
 /* harmony import */ var vue3_geolocation__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(vue3_geolocation__WEBPACK_IMPORTED_MODULE_11__);
-Object(function webpackMissingModule() { var e = new Error("Cannot find module '@fawmi/vue-google-maps'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
+/* harmony import */ var _fawmi_vue_google_maps__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @fawmi/vue-google-maps */ "./node_modules/@fawmi/vue-google-maps/src/main.js");
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
 
@@ -32508,7 +37851,7 @@ app.use(vue_toastification__WEBPACK_IMPORTED_MODULE_1__["default"], {
   position: vue_toastification__WEBPACK_IMPORTED_MODULE_1__.POSITION.BOTTOM_RIGHT,
   timeout: 2000
 });
-app.use(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@fawmi/vue-google-maps'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()), {
+app.use(_fawmi_vue_google_maps__WEBPACK_IMPORTED_MODULE_12__["default"], {
   load: {
     key: 'AIzaSyA7NJiportPdMrSes7VW1XI63-qhL0i3DM',
     libraries: "places"
@@ -37891,6 +43234,30 @@ defineJQueryPlugin(Toast);
 
 /***/ }),
 
+/***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/@vueform/multiselect/themes/default.css":
+/*!**********************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/@vueform/multiselect/themes/default.css ***!
+  \**********************************************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, ".multiselect{align-items:center;background:var(--ms-bg,#fff);border:var(--ms-border-width,1px) solid var(--ms-border-color,#d1d5db);border-radius:var(--ms-radius,4px);box-sizing:border-box;cursor:pointer;display:flex;font-size:var(--ms-font-size,1rem);justify-content:flex-end;margin:0 auto;min-height:calc(var(--ms-border-width, 1px)*2 + var(--ms-font-size, 1rem)*var(--ms-line-height, 1.375) + var(--ms-py, .5rem)*2);outline:none;position:relative;width:100%}.multiselect.is-open{border-radius:var(--ms-radius,4px) var(--ms-radius,4px) 0 0}.multiselect.is-open-top{border-radius:0 0 var(--ms-radius,4px) var(--ms-radius,4px)}.multiselect.is-disabled{background:var(--ms-bg-disabled,#f3f4f6);cursor:default}.multiselect.is-active{box-shadow:0 0 0 var(--ms-ring-width,3px) var(--ms-ring-color,rgba(16,185,129,.188))}.multiselect-multiple-label,.multiselect-placeholder,.multiselect-single-label{align-items:center;background:transparent;box-sizing:border-box;display:flex;height:100%;left:0;line-height:var(--ms-line-height,1.375);max-width:100%;padding-left:var(--ms-px,.875rem);padding-right:calc(1.25rem + var(--ms-px, .875rem)*3);pointer-events:none;position:absolute;top:0}.multiselect-placeholder{color:var(--ms-placeholder-color,#9ca3af)}.multiselect-single-label-text{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.multiselect-search{-webkit-appearance:none;-moz-appearance:none;appearance:none;background:var(--ms-bg,#fff);border:0;border-radius:var(--ms-radius,4px);bottom:0;box-sizing:border-box;font-family:inherit;font-size:inherit;height:100%;left:0;outline:none;padding-left:var(--ms-px,.875rem);position:absolute;right:0;top:0;width:100%}.multiselect-search::-webkit-search-cancel-button,.multiselect-search::-webkit-search-decoration,.multiselect-search::-webkit-search-results-button,.multiselect-search::-webkit-search-results-decoration{-webkit-appearance:none}.multiselect-tags{align-items:center;display:flex;flex-grow:1;flex-shrink:1;flex-wrap:wrap;margin:var(--ms-tag-my,.25rem) 0 0;padding-left:var(--ms-py,.5rem)}.multiselect-tag{align-items:center;background:var(--ms-tag-bg,#10b981);border-radius:var(--ms-tag-radius,4px);color:var(--ms-tag-color,#fff);display:flex;font-size:var(--ms-tag-font-size,.875rem);font-weight:var(--ms-tag-font-weight,600);line-height:var(--ms-tag-line-height,1.25rem);margin-bottom:var(--ms-tag-my,.25rem);margin-right:var(--ms-tag-mx,.25rem);padding:var(--ms-tag-py,.125rem) 0 var(--ms-tag-py,.125rem) var(--ms-tag-px,.5rem);white-space:nowrap}.multiselect-tag.is-disabled{background:var(--ms-tag-bg-disabled,#9ca3af);color:var(--ms-tag-color-disabled,#fff);padding-right:var(--ms-tag-px,.5rem)}.multiselect-tag-remove{align-items:center;border-radius:var(--ms-tag-remove-radius,4px);display:flex;justify-content:center;margin:var(--ms-tag-remove-my,0) var(--ms-tag-remove-mx,.125rem);padding:var(--ms-tag-remove-py,.25rem) var(--ms-tag-remove-px,.25rem)}.multiselect-tag-remove:hover{background:rgba(0,0,0,.063)}.multiselect-tag-remove-icon{background-color:currentColor;display:inline-block;height:.75rem;-webkit-mask-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 320 512' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m207.6 256 107.72-107.72c6.23-6.23 6.23-16.34 0-22.58l-25.03-25.03c-6.23-6.23-16.34-6.23-22.58 0L160 208.4 52.28 100.68c-6.23-6.23-16.34-6.23-22.58 0L4.68 125.7c-6.23 6.23-6.23 16.34 0 22.58L112.4 256 4.68 363.72c-6.23 6.23-6.23 16.34 0 22.58l25.03 25.03c6.23 6.23 16.34 6.23 22.58 0L160 303.6l107.72 107.72c6.23 6.23 16.34 6.23 22.58 0l25.03-25.03c6.23-6.23 6.23-16.34 0-22.58L207.6 256z'/%3E%3C/svg%3E\");mask-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 320 512' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m207.6 256 107.72-107.72c6.23-6.23 6.23-16.34 0-22.58l-25.03-25.03c-6.23-6.23-16.34-6.23-22.58 0L160 208.4 52.28 100.68c-6.23-6.23-16.34-6.23-22.58 0L4.68 125.7c-6.23 6.23-6.23 16.34 0 22.58L112.4 256 4.68 363.72c-6.23 6.23-6.23 16.34 0 22.58l25.03 25.03c6.23 6.23 16.34 6.23 22.58 0L160 303.6l107.72 107.72c6.23 6.23 16.34 6.23 22.58 0l25.03-25.03c6.23-6.23 6.23-16.34 0-22.58L207.6 256z'/%3E%3C/svg%3E\");-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:contain;mask-size:contain;opacity:.8;width:.75rem}.multiselect-tags-search-wrapper{display:inline-block;flex-grow:1;flex-shrink:1;height:100%;margin:0 var(--ms-tag-mx,4px) var(--ms-tag-my,4px);position:relative}.multiselect-tags-search-copy{display:inline-block;height:1px;visibility:hidden;white-space:pre-wrap;width:100%}.multiselect-tags-search{-webkit-appearance:none;-moz-appearance:none;appearance:none;border:0;bottom:0;box-sizing:border-box;font-family:inherit;font-size:inherit;left:0;outline:none;padding:0;position:absolute;right:0;top:0;width:100%}.multiselect-tags-search::-webkit-search-cancel-button,.multiselect-tags-search::-webkit-search-decoration,.multiselect-tags-search::-webkit-search-results-button,.multiselect-tags-search::-webkit-search-results-decoration{-webkit-appearance:none}.multiselect-inifite{align-items:center;display:flex;justify-content:center;min-height:calc(var(--ms-border-width, 1px)*2 + var(--ms-font-size, 1rem)*var(--ms-line-height, 1.375) + var(--ms-py, .5rem)*2);width:100%}.multiselect-inifite-spinner,.multiselect-spinner{-webkit-animation:multiselect-spin 1s linear infinite;animation:multiselect-spin 1s linear infinite;background-color:var(--ms-spinner-color,#10b981);flex-grow:0;flex-shrink:0;height:1rem;-webkit-mask-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 512 512' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m456.433 371.72-27.79-16.045c-7.192-4.152-10.052-13.136-6.487-20.636 25.82-54.328 23.566-118.602-6.768-171.03-30.265-52.529-84.802-86.621-144.76-91.424C262.35 71.922 256 64.953 256 56.649V24.56c0-9.31 7.916-16.609 17.204-15.96 81.795 5.717 156.412 51.902 197.611 123.408 41.301 71.385 43.99 159.096 8.042 232.792-4.082 8.369-14.361 11.575-22.424 6.92z'/%3E%3C/svg%3E\");mask-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 512 512' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m456.433 371.72-27.79-16.045c-7.192-4.152-10.052-13.136-6.487-20.636 25.82-54.328 23.566-118.602-6.768-171.03-30.265-52.529-84.802-86.621-144.76-91.424C262.35 71.922 256 64.953 256 56.649V24.56c0-9.31 7.916-16.609 17.204-15.96 81.795 5.717 156.412 51.902 197.611 123.408 41.301 71.385 43.99 159.096 8.042 232.792-4.082 8.369-14.361 11.575-22.424 6.92z'/%3E%3C/svg%3E\");-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:contain;mask-size:contain;width:1rem;z-index:10}.multiselect-spinner{margin:0 var(--ms-px,.875rem) 0 0}.multiselect-clear{display:flex;flex-grow:0;flex-shrink:0;opacity:1;padding:0 var(--ms-px,.875rem) 0 0;position:relative;transition:.3s;z-index:10}.multiselect-clear:hover .multiselect-clear-icon{background-color:var(--ms-clear-color-hover,#000)}.multiselect-clear-icon{background-color:var(--ms-clear-color,#999);display:inline-block;-webkit-mask-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 320 512' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m207.6 256 107.72-107.72c6.23-6.23 6.23-16.34 0-22.58l-25.03-25.03c-6.23-6.23-16.34-6.23-22.58 0L160 208.4 52.28 100.68c-6.23-6.23-16.34-6.23-22.58 0L4.68 125.7c-6.23 6.23-6.23 16.34 0 22.58L112.4 256 4.68 363.72c-6.23 6.23-6.23 16.34 0 22.58l25.03 25.03c6.23 6.23 16.34 6.23 22.58 0L160 303.6l107.72 107.72c6.23 6.23 16.34 6.23 22.58 0l25.03-25.03c6.23-6.23 6.23-16.34 0-22.58L207.6 256z'/%3E%3C/svg%3E\");mask-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 320 512' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m207.6 256 107.72-107.72c6.23-6.23 6.23-16.34 0-22.58l-25.03-25.03c-6.23-6.23-16.34-6.23-22.58 0L160 208.4 52.28 100.68c-6.23-6.23-16.34-6.23-22.58 0L4.68 125.7c-6.23 6.23-6.23 16.34 0 22.58L112.4 256 4.68 363.72c-6.23 6.23-6.23 16.34 0 22.58l25.03 25.03c6.23 6.23 16.34 6.23 22.58 0L160 303.6l107.72 107.72c6.23 6.23 16.34 6.23 22.58 0l25.03-25.03c6.23-6.23 6.23-16.34 0-22.58L207.6 256z'/%3E%3C/svg%3E\");transition:.3s}.multiselect-caret,.multiselect-clear-icon{height:1.125rem;-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:contain;mask-size:contain;width:.625rem}.multiselect-caret{background-color:var(--ms-caret-color,#999);flex-grow:0;flex-shrink:0;margin:0 var(--ms-px,.875rem) 0 0;-webkit-mask-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 320 512' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z'/%3E%3C/svg%3E\");mask-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 320 512' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z'/%3E%3C/svg%3E\");pointer-events:none;position:relative;transform:rotate(0deg);transition:transform .3s;z-index:10}.multiselect-caret.is-open{pointer-events:auto;transform:rotate(180deg)}.multiselect-dropdown{-webkit-overflow-scrolling:touch;background:var(--ms-dropdown-bg,#fff);border:var(--ms-dropdown-border-width,1px) solid var(--ms-dropdown-border-color,#d1d5db);border-radius:0 0 var(--ms-dropdown-radius,4px) var(--ms-dropdown-radius,4px);bottom:0;display:flex;flex-direction:column;left:calc(var(--ms-border-width, 1px)*-1);margin-top:calc(var(--ms-border-width, 1px)*-1);max-height:15rem;max-height:var(--ms-max-height,10rem);outline:none;overflow-y:scroll;position:absolute;right:calc(var(--ms-border-width, 1px)*-1);transform:translateY(100%);z-index:100}.multiselect-dropdown.is-top{border-radius:var(--ms-dropdown-radius,4px) var(--ms-dropdown-radius,4px) 0 0;bottom:auto;top:var(--ms-border-width,1px);transform:translateY(-100%)}.multiselect-dropdown.is-hidden{display:none}.multiselect-options{display:flex;flex-direction:column;list-style:none;margin:0;padding:0}.multiselect-group{margin:0;padding:0}.multiselect-group-label{align-items:center;background:var(--ms-group-label-bg,#e5e7eb);box-sizing:border-box;color:var(--ms-group-label-color,#374151);cursor:default;display:flex;font-size:.875rem;font-weight:600;justify-content:flex-start;line-height:var(--ms-group-label-line-height,1.375);padding:var(--ms-group-label-py,.3rem) var(--ms-group-label-px,.75rem);text-align:left;text-decoration:none}.multiselect-group-label.is-pointable{cursor:pointer}.multiselect-group-label.is-pointed{background:var(--ms-group-label-bg-pointed,#d1d5db);color:var(--ms-group-label-color-pointed,#374151)}.multiselect-group-label.is-selected{background:var(--ms-group-label-bg-selected,#059669);color:var(--ms-group-label-color-selected,#fff)}.multiselect-group-label.is-disabled{background:var(--ms-group-label-bg-disabled,#f3f4f6);color:var(--ms-group-label-color-disabled,#d1d5db);cursor:not-allowed}.multiselect-group-label.is-selected.is-pointed{background:var(--ms-group-label-bg-selected-pointed,#0c9e70);color:var(--ms-group-label-color-selected-pointed,#fff)}.multiselect-group-label.is-selected.is-disabled{background:var(--ms-group-label-bg-selected-disabled,#75cfb1);color:var(--ms-group-label-color-selected-disabled,#d1fae5)}.multiselect-group-options{margin:0;padding:0}.multiselect-option{align-items:center;box-sizing:border-box;cursor:pointer;display:flex;font-size:var(--ms-option-font-size,1rem);justify-content:flex-start;line-height:var(--ms-option-line-height,1.375);padding:var(--ms-option-py,.5rem) var(--ms-option-px,.75rem);text-align:left;text-decoration:none}.multiselect-option.is-pointed{background:var(--ms-option-bg-pointed,#f3f4f6);color:var(--ms-option-color-pointed,#1f2937)}.multiselect-option.is-selected{background:var(--ms-option-bg-selected,#10b981);color:var(--ms-option-color-selected,#fff)}.multiselect-option.is-disabled{background:var(--ms-option-bg-disabled,#fff);color:var(--ms-option-color-disabled,#d1d5db);cursor:not-allowed}.multiselect-option.is-selected.is-pointed{background:var(--ms-option-bg-selected-pointed,#26c08e);color:var(--ms-option-color-selected-pointed,#fff)}.multiselect-option.is-selected.is-disabled{background:var(--ms-option-bg-selected-disabled,#87dcc0);color:var(--ms-option-color-selected-disabled,#d1fae5)}.multiselect-no-options,.multiselect-no-results{color:var(--ms-empty-color,#4b5563);padding:var(--ms-option-py,.5rem) var(--ms-option-px,.75rem)}.multiselect-fake-input{background:transparent;border:0;bottom:-1px;font-size:0;height:1px;left:0;outline:none;padding:0;position:absolute;right:0;width:100%}.multiselect-fake-input:active,.multiselect-fake-input:focus{outline:none}.multiselect-spacer{display:none}[dir=rtl] .multiselect-multiple-label,[dir=rtl] .multiselect-placeholder,[dir=rtl] .multiselect-single-label{left:auto;padding-left:calc(1.25rem + var(--ms-px, .875rem)*3);padding-right:var(--ms-px,.875rem);right:0}[dir=rtl] .multiselect-search{padding-left:0;padding-right:var(--ms-px,.875rem)}[dir=rtl] .multiselect-tags{padding-left:0;padding-right:var(--ms-py,.5rem)}[dir=rtl] .multiselect-tag{margin-left:var(--ms-tag-mx,.25rem);margin-right:0;padding:var(--ms-tag-py,.125rem) var(--ms-tag-px,.5rem) var(--ms-tag-py,.125rem) 0}[dir=rtl] .multiselect-tag.is-disabled{padding-left:var(--ms-tag-px,.5rem)}[dir=rtl] .multiselect-caret,[dir=rtl] .multiselect-spinner{margin:0 0 0 var(--ms-px,.875rem)}[dir=rtl] .multiselect-clear{padding:0 0 0 var(--ms-px,.875rem)}@-webkit-keyframes multiselect-spin{0%{transform:rotate(0)}to{transform:rotate(1turn)}}@keyframes multiselect-spin{0%{transform:rotate(0)}to{transform:rotate(1turn)}}", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
 /***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/mdb-vue-ui-kit/css/mdb.min.css":
 /*!*************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/mdb-vue-ui-kit/css/mdb.min.css ***!
@@ -38009,6 +43376,30 @@ var ___CSS_LOADER_URL_REPLACEMENT_6___ = _node_modules_css_loader_dist_runtime_g
 var ___CSS_LOADER_URL_REPLACEMENT_7___ = _node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_img_about_banner_png__WEBPACK_IMPORTED_MODULE_9__["default"]);
 // Module
 ___CSS_LOADER_EXPORT___.push([module.id, ":root {\r\n    --theme-orange-color: #F05922;\r\n    --text-color-1: #7C7C7C;\r\n    --text-color-2: #3D3C3C;\r\n    --dull-color: #8C96A2;\r\n\r\n}\r\n\r\nbody {\r\n    font-family: 'Roboto', sans-serif;\r\n    color: #000;\r\n}\r\n\r\na:hover {\r\n    color: var(--theme-orange-color);\r\n}\r\n\r\n.f-w-400 {\r\n    font-weight: 400;\r\n}\r\n\r\n.cursor-pointer {\r\n    cursor: pointer;\r\n}\r\n\r\n.geekmark {\r\n    border: 2px solid #9D9B9B;\r\n    position: relative;\r\n    width: 15px;\r\n    height: 15px;\r\n    display: inline-block;\r\n}\r\n\r\nlabel[for=\"terms\"] {\r\n    cursor: pointer;\r\n}\r\n\r\n.geekmark::after {\r\n    content: '';\r\n    position: absolute;\r\n    background-size: contain;\r\n    background-image: url(" + ___CSS_LOADER_URL_REPLACEMENT_0___ + ");\r\n    display: none;\r\n    inset: 0;\r\n}\r\n\r\nlabel[for=\"terms\"] input:checked~.geekmark::after {\r\n    display: block;\r\n}\r\n\r\n.no-resize {\r\n    resize: none;\r\n}\r\n\r\n.w-fit-content {\r\n    width: -webkit-fit-content;\r\n    width: -moz-fit-content;\r\n    width: fit-content;\r\n}\r\n\r\n.btn-custom-white {\r\n    background-color: #fff;\r\n    color: var(--theme-orange-color);\r\n}\r\n\r\n.btn-custom-white:hover {\r\n    background-color: var(--theme-orange-color);\r\n    color: #fff;\r\n}\r\n\r\n.text-orange {\r\n    color: var(--theme-orange-color);\r\n}\r\n\r\n.text-color-1 {\r\n    color: var(--text-color-1);\r\n}\r\n\r\n.text-color-2 {\r\n    color: var(--text-color-2);\r\n}\r\n\r\n.text-dull {\r\n    color: var(--dull-color);\r\n}\r\n\r\n.bg-orange {\r\n    background-color: var(--theme-orange-color);\r\n}\r\n\r\n.bg-light-grey {\r\n    background-color: #BEC5C9;\r\n}\r\n\r\n.fw-500 {\r\n    font-weight: 500;\r\n}\r\n\r\n.skelton {\r\n    background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);\r\n    border-radius: 5px;\r\n    background-size: 200% 100%;\r\n    -webkit-animation: 1.5s shine linear infinite;\r\n            animation: 1.5s shine linear infinite;\r\n}\r\n\r\n@-webkit-keyframes shine {\r\n    to {\r\n        background-position-x: -200%;\r\n    }\r\n}\r\n\r\n@keyframes shine {\r\n    to {\r\n        background-position-x: -200%;\r\n    }\r\n}\r\n\r\n.sidebar {\r\n    position: fixed;\r\n    top: 68px;\r\n    bottom: 0;\r\n    background-color: #fff;\r\n    z-index: 1029;\r\n    height: calc(100vh - 68px);\r\n    width: 270px;\r\n    border-right: 1px solid #dadada;\r\n    overflow: auto;\r\n}\r\n\r\n.side-menu {\r\n    margin-top: 60px;\r\n    margin-left: 68px;\r\n}\r\n\r\n.mar-left {\r\n    padding-left: 270px;\r\n}\r\n\r\n.side-menu .side-menu-item {\r\n    margin-bottom: 15px;\r\n}\r\n\r\n.side-menu .side-menu-item a {\r\n    font-size: .9rem;\r\n    color: #8C96A2;\r\n    font-weight: bold;\r\n    transition: all .3s ease;\r\n}\r\n\r\n.side-menu .side-menu-item a.router-link-active {\r\n    color: var(--theme-orange-color);\r\n}\r\n\r\n.side-menu .side-menu-item a:hover {\r\n    color: var(--theme-orange-color);\r\n}\r\n\r\n.heading-color {\r\n    color: #343434;\r\n}\r\n\r\n.main-navbar .nav-item .nav-link {\r\n    color: #343434;\r\n    font-weight: bold;\r\n    font-size: 14px;\r\n}\r\n\r\n.main-navbar .nav-item .nav-link:hover {\r\n    color: var(--theme-orange-color);\r\n}\r\n\r\n.login-btn {\r\n    padding-inline: 2rem;\r\n}\r\n\r\n.btn {\r\n    font-size: .8rem;\r\n}\r\n\r\n.text-on-slider {\r\n    position: absolute;\r\n    left: 19%;\r\n    top: 20%;\r\n    z-index: 1;\r\n}\r\n\r\n.main-slider {\r\n    width: 77%;\r\n    margin-left: auto;\r\n}\r\n\r\n.main-slider .slider-image {\r\n    width: 100%;\r\n    -o-object-fit: cover;\r\n       object-fit: cover;\r\n}\r\n\r\n.main-slider .carousel-control-prev,\r\n.main-slider .carousel-control-next {\r\n    width: 35px;\r\n    height: 35px;\r\n    border-radius: 50%;\r\n    right: 20%;\r\n    left: auto;\r\n    background-color: transparent;\r\n    border: 1px solid #fff;\r\n    color: #fff;\r\n    opacity: 1;\r\n    transition: all .4s ease;\r\n}\r\n\r\n.main-slider .carousel-item::after {\r\n    content: '';\r\n    height: 85%;\r\n    width: 100px;\r\n    position: absolute;\r\n    right: 1%;\r\n    top: calc(50% - 291px);\r\n    background-repeat: no-repeat;\r\n    background-size: contain;\r\n    background-position: center;\r\n}\r\n\r\n.main-slider .carousel-item:first-child:after {\r\n    background-image: url(" + ___CSS_LOADER_URL_REPLACEMENT_1___ + ");\r\n}\r\n\r\n.main-slider .carousel-item:nth-of-type(2):after {\r\n    background-image: url(" + ___CSS_LOADER_URL_REPLACEMENT_2___ + ");\r\n}\r\n\r\n.main-slider .carousel-item:last-child:after {\r\n    background-image: url(" + ___CSS_LOADER_URL_REPLACEMENT_3___ + ");\r\n}\r\n\r\n.main-slider .carousel-control-prev:hover,\r\n.main-slider .carousel-control-next:hover {\r\n    background-color: #fff;\r\n    color: var(--theme-orange-color);\r\n}\r\n\r\n.main-slider .carousel-control-prev {\r\n    top: 44%;\r\n}\r\n\r\n.main-slider .carousel-control-next {\r\n    top: 56%;\r\n}\r\n\r\n.main-slider .carousel-control-prev-icon,\r\n.main-slider .carousel-control-next-icon {\r\n    width: auto;\r\n    height: auto;\r\n}\r\n\r\n.main-slider .carousel-control-prev-icon::after {\r\n    content: '\\f062';\r\n    font-size: 1.1rem;\r\n}\r\n\r\n.main-slider .carousel-control-next-icon::after {\r\n    content: '\\f063';\r\n    font-size: 1.1rem;\r\n}\r\n\r\n.carousel-indicators button {\r\n    display: block;\r\n    height: 7px;\r\n    width: 7px;\r\n    background-color: #fff;\r\n    border: 1px solid transparent;\r\n    margin-block: 2px;\r\n    color: #fff;\r\n    border-radius: 50%;\r\n    opacity: 1;\r\n}\r\n\r\n.main-slider .carousel-indicators {\r\n    right: 20.6%;\r\n    display: block;\r\n    top: 50%;\r\n    left: auto;\r\n    bottom: auto;\r\n    margin: 0;\r\n}\r\n\r\n.carousel-indicators .active {\r\n    background-color: var(--theme-orange-color);\r\n}\r\n\r\n.filter-section {\r\n    position: relative;\r\n    z-index: 10;\r\n    margin-top: -2.2rem;\r\n}\r\n\r\n.filter-box select {\r\n    background-color: #F2F2F2;\r\n}\r\n\r\n.filter-box select:focus {\r\n    box-shadow: inset 0px 0px 0px 1px var(--theme-orange-color);\r\n}\r\n\r\n.features-card img {\r\n    max-width: 55px;\r\n    min-height: 55px;\r\n    margin: 0 auto;\r\n}\r\n\r\n.bg-after-orange {\r\n    position: relative;\r\n}\r\n\r\n.bg-after-orange::after {\r\n    position: absolute;\r\n    content: '';\r\n    background-color: var(--theme-orange-color);\r\n    inset: 0;\r\n    transform: rotate(5deg);\r\n    border-radius: 10px;\r\n    z-index: -1;\r\n}\r\n\r\n.find-best-section {\r\n    background-color: #FFF5F4;\r\n}\r\n\r\n.orange-background {\r\n    background-image: url(" + ___CSS_LOADER_URL_REPLACEMENT_4___ + ");\r\n    background-repeat: no-repeat;\r\n    background-position: bottom left;\r\n}\r\n\r\n.girl-img {\r\n    position: relative;\r\n    left: 160px;\r\n}\r\n\r\n.section-5 .text-box {\r\n    background: rgba(224, 220, 220, 0.31);\r\n    -webkit-backdrop-filter: blur(88px);\r\n            backdrop-filter: blur(88px);\r\n    border-radius: 39px;\r\n    padding: 2rem 1rem;\r\n    width: 290px;\r\n    bottom: 0;\r\n    left: calc(50% - 125px);\r\n}\r\n\r\n.section-5 .right-side {\r\n    background-image: url(" + ___CSS_LOADER_URL_REPLACEMENT_5___ + ");\r\n    background-repeat: no-repeat;\r\n    background-size: contain;\r\n    background-position: top right;\r\n}\r\n\r\n.man-image {\r\n    background-color: #D7F8FF;\r\n    border-radius: 50%;\r\n    display: flex;\r\n    align-items: center;\r\n    justify-content: center;\r\n    min-width: 68px;\r\n    max-width: 68px;\r\n    height: 68px;\r\n    padding: 1.1rem;\r\n}\r\n\r\n.section-6 {\r\n    background: linear-gradient(276.88deg, rgba(255, 255, 255, 0.99) 21.15%, #E2EBF4 113.07%);\r\n}\r\n\r\n.section-6 .boxes .white-box {\r\n    width: 315px;\r\n    height: 243px;\r\n}\r\n\r\n.section-7 {\r\n    background-color: #F6FAFD;\r\n}\r\n\r\n.footer-links li {\r\n    margin-bottom: .5rem;\r\n}\r\n\r\n.footer-links li a {\r\n    color: #5B5B5B;\r\n    font-size: .8rem;\r\n}\r\n\r\nnav.navbar {\r\n    transition: .2s linear;\r\n}\r\n\r\nnav.navbar.bg-color-show {\r\n    background-color: #fff;\r\n    box-shadow: 0 7px 15px 0 rgb(0 0 0 / 15%) !important;\r\n}\r\n\r\n.category-boxes {\r\n    overflow-x: auto;\r\n}\r\n\r\n::-webkit-scrollbar {\r\n    height: 8px;\r\n    width: 7px;\r\n    border-radius: 10px;\r\n}\r\n\r\n::-webkit-scrollbar-thumb {\r\n    background-color: var(--theme-orange-color);\r\n    border-radius: 10px;\r\n}\r\n\r\n::-webkit-scrollbar-track {\r\n    background-color: #E6E6E6;\r\n    border-radius: 10px;\r\n}\r\n\r\n.category-boxes .category-box {\r\n    min-width: 217px;\r\n    height: 191px;\r\n}\r\n\r\n.facebook-btn {\r\n    background-color: #527BCB;\r\n}\r\n\r\ninput:focus,\r\n.form-select:focus,\r\n.form-control:focus {\r\n    border-color: var(--theme-orange-color);\r\n    box-shadow: inset 0px 0px 0px 1px var(--theme-orange-color);\r\n}\r\n\r\ninput.border-danger,\r\n.form-select.border-danger,\r\n.form-control.border-danger,\r\n.vue__time-picker.border-danger input {\r\n    border: 1px solid #f93154;\r\n    box-shadow: inset 0px 0px 0px 1px #f93154;\r\n}\r\n\r\n.form-outline .form-control:focus~.form-notch .form-notch-leading,\r\n.form-outline .form-control:focus~.form-notch .form-notch-middle,\r\n.form-outline .form-control:focus~.form-notch .form-notch-trailing {\r\n    border-color: var(--theme-orange-color);\r\n}\r\n\r\n.theme-custom-checkbox {\r\n    visibility: hidden;\r\n}\r\n\r\n.bg-light-grey {\r\n    background: #F8F8F8;\r\n}\r\n\r\n.custom-drag-label {\r\n    padding: 1.1rem;\r\n    border: 2px dashed var(--theme-orange-color);\r\n    cursor: pointer;\r\n    border-radius: 8px;\r\n    color: #8C96A2;\r\n    font-size: .8rem;\r\n    display: block;\r\n    font-weight: bold;\r\n    position: relative;\r\n    transition: .25s ease;\r\n}\r\n\r\n.custom-drag-label.drag-entered {\r\n    background-color: var(--theme-orange-color);\r\n    color: #fff;\r\n}\r\n\r\n.custom-drag-label.drag-entered svg path {\r\n    fill: #fff;\r\n}\r\n\r\n.custom-file-type {\r\n    opacity: 0;\r\n    position: absolute;\r\n    inset: 0;\r\n    z-index: 1;\r\n}\r\n\r\n.category-tabs .nav-tabs .nav-link {\r\n    font-size: .85rem;\r\n}\r\n\r\n.category-tabs .nav-tabs .nav-link {\r\n    border: none;\r\n}\r\n\r\n.category-tabs .nav-tabs .nav-link.active,\r\n.category-tabs .nav-tabs .nav-link:hover {\r\n    color: var(--theme-orange-color);\r\n    background-color: transparent;\r\n    position: relative;\r\n}\r\n\r\n.navbar-nav .nav-item>a {\r\n    position: relative;\r\n    padding-left: 0 !important;\r\n}\r\n\r\n.category-tabs .nav-tabs .nav-link.active::before,\r\n.navbar-nav .navlink-active a::before,\r\n.category-tabs .nav-tabs .nav-link.active::after,\r\n.navbar-nav .navlink-active a::after {\r\n    content: '';\r\n    position: absolute;\r\n    bottom: 0;\r\n    left: 0;\r\n    width: 30px;\r\n    height: 3px;\r\n    border-radius: 10px;\r\n    background-color: var(--theme-orange-color);\r\n}\r\n\r\n.category-tabs .nav-tabs .nav-link.active::after,\r\n.navbar-nav .navlink-active a::after {\r\n    width: 4px;\r\n    height: 3px;\r\n    left: 31px;\r\n}\r\n\r\n.category-tabs .category-tab-pane {\r\n    max-height: 300px;\r\n    overflow-y: auto;\r\n}\r\n\r\n.form-outline .form-control.category-input,\r\n.category-input.form-select {\r\n    background-color: #F9F9FA;\r\n    outline: none;\r\n    padding-block: .8rem;\r\n}\r\n\r\n.modal-content {\r\n    border-radius: 1rem;\r\n}\r\n\r\n#add-new-category-modal .custom-height {\r\n    min-height: 300px;\r\n}\r\n\r\n.form-outline .form-control.category-input:focus {\r\n    background-color: #fff;\r\n}\r\n\r\n.form-outline .form-control.category-input::-moz-placeholder {\r\n    color: #8C96A2;\r\n}\r\n\r\n.form-outline .form-control.category-input:-ms-input-placeholder {\r\n    color: #8C96A2;\r\n}\r\n\r\n.form-outline .form-control.category-input::placeholder {\r\n    color: #8C96A2;\r\n}\r\n\r\n.modal-width .modal-dialog {\r\n    max-width: 700px;\r\n}\r\n\r\n.service-table th,\r\n.booking-table th {\r\n    font-size: .85rem;\r\n    color: var(--theme-orange-color);\r\n}\r\n\r\n.booking-table th {\r\n    font-weight: bold;\r\n}\r\n\r\n.service-table th:last-child,\r\n.service-table td:last-child,\r\n.booking-table th:last-child,\r\n.booking-table td:last-child {\r\n    text-align: center;\r\n}\r\n\r\n.service-table td,\r\n.booking-table td {\r\n    font-size: .8rem;\r\n    font-weight: bold;\r\n}\r\n\r\n.booking-table td {\r\n    font-weight: 500;\r\n}\r\n\r\n.form-check-input.type-radio[type=radio]:checked::after {\r\n    background-color: var(--theme-orange-color);\r\n    border-color: var(--theme-orange-color);\r\n}\r\n\r\n.form-check-input.type-radio,\r\n.form-check-input.type-radio[type=radio]:checked {\r\n    border: 0.125rem solid var(--theme-orange-color);\r\n}\r\n\r\n.form-check-input:active {\r\n    filter: brightness(100%);\r\n}\r\n\r\n.form-check-input.type-radio[type=radio]:checked::before,\r\n.form-check-input.type-radio::before {\r\n    box-shadow: 0px 0px 0px 13px var(--theme-orange-color);\r\n}\r\n\r\n.spinner-border.spinner {\r\n    height: 25px;\r\n    width: 25px;\r\n}\r\n\r\n.profile-dropdown .dropdown-toggle::after {\r\n    display: none;\r\n}\r\n\r\n.booking-list-filters select {\r\n    font-size: .9rem;\r\n    padding-block: .6rem;\r\n}\r\n\r\n.booking-category {\r\n    height: 30px;\r\n    width: 30px;\r\n    background-color: #EBEBEB;\r\n    border-radius: 50%;\r\n}\r\n\r\n.booking-profiles {\r\n    height: calc(100vh - 180px);\r\n    overflow: auto;\r\n    padding-left: .5rem;\r\n    direction: rtl;\r\n}\r\n\r\n.booking-profiles::-webkit-scrollbar-thumb {\r\n    background-color: #C4C4C4;\r\n}\r\n\r\n.booking-profiles .booking-pro {\r\n    cursor: pointer;\r\n    direction: ltr;\r\n}\r\n\r\n.booking-profiles .booking-pro.active {\r\n    border: 1px solid var(--theme-orange-color) !important;\r\n}\r\n\r\n.booking-profiles .booking-pro .booking-btn:disabled {\r\n    opacity: 1;\r\n    background-color: #E4E4E4;\r\n    color: #000 !important;\r\n}\r\n\r\n.notifiction-panel {\r\n    max-height: 400px;\r\n    width: 700px;\r\n    z-index: 2;\r\n    top: 150%;\r\n    right: 0;\r\n    background-color: #fff;\r\n    border-radius: 40px 0px 8px 4px;\r\n    overflow: auto;\r\n}\r\n\r\n.time-picker.vue__time-picker input.vue__time-picker-input {\r\n    display: block;\r\n    width: 100%;\r\n    padding: 0.375rem 0.75rem;\r\n    font-size: 1rem;\r\n    font-weight: 400;\r\n    height: auto;\r\n    line-height: 1.6;\r\n    color: #4f4f4f;\r\n    background-clip: padding-box;\r\n    border: 1px solid #bdbdbd;\r\n    -webkit-appearance: none;\r\n    -moz-appearance: none;\r\n    appearance: none;\r\n    border-radius: 0.25rem;\r\n    transition: all .2s linear;\r\n    background-color: #F9F9FA;\r\n    outline: none;\r\n    padding-block: 0.8rem;\r\n}\r\n\r\n.vue__time-picker .dropdown {\r\n    top: calc(3.2em + 2px) !important;\r\n}\r\n\r\n.vue__time-picker .dropdown ul li:not([disabled]).active,\r\n.vue__time-picker .dropdown ul li:not([disabled]).active:hover,\r\n.vue__time-picker .dropdown ul li:not([disabled]).active:focus {\r\n    background-color: var(--theme-orange-color) !important;\r\n}\r\n\r\n.select-date {\r\n    width: 250px;\r\n    border: 0;\r\n    border-radius: 9px;\r\n    background-color: #F2F2F2;\r\n    padding: .6rem .3rem .6rem 2.9rem;\r\n    font-weight: bold;\r\n    position: relative;\r\n}\r\n\r\n.select-parent::before {\r\n    content: '';\r\n    position: absolute;\r\n    display: inline-block;\r\n    background-image: url(" + ___CSS_LOADER_URL_REPLACEMENT_6___ + ");\r\n    background-size: contain;\r\n    background-repeat: no-repeat;\r\n    left: 0;\r\n    top: 0;\r\n    bottom: 0;\r\n    height: 100%;\r\n    width: 50px;\r\n    z-index: 1;\r\n}\r\n\r\n.custom-label {\r\n    position: relative;\r\n    display: inline-block;\r\n    height: 15px;\r\n    width: 30px;\r\n    cursor: pointer;\r\n\r\n}\r\n\r\n.custom-label input {\r\n    position: absolute;\r\n    opacity: 0;\r\n    cursor: pointer;\r\n    height: 0;\r\n    width: 0;\r\n}\r\n\r\n.checkmark {\r\n    position: absolute;\r\n    top: 0;\r\n    left: 0;\r\n    height: 20px;\r\n    width: 22px;\r\n    border-radius: 3px;\r\n    border: 2px solid #E4E4E4;\r\n    transition: all .3s ease;\r\n}\r\n\r\n.custom-label:hover input~.checkmark {\r\n    background-color: #ccc;\r\n}\r\n\r\n.custom-label input:checked~.checkmark {\r\n    background-color: #199675;\r\n    border: 0;\r\n}\r\n\r\n.checkmark:after {\r\n    content: \"\";\r\n    position: absolute;\r\n    display: none;\r\n}\r\n\r\n.custom-label input:checked~.checkmark:after {\r\n    display: block;\r\n}\r\n\r\n.custom-label .checkmark:after {\r\n    left: 9px;\r\n    top: 4px;\r\n    width: 5px;\r\n    height: 10px;\r\n    border: solid white;\r\n    border-width: 0 3px 3px 0;\r\n    transform: rotate(45deg);\r\n}\r\n\r\n.footer {\r\n    background-color: #F9F9FA;\r\n}\r\n\r\n.payment-methods label {\r\n    padding: 3px 6px;\r\n    border: 1px solid transparent;\r\n}\r\n\r\n.payment-methods label img {\r\n    max-width: 100px;\r\n}\r\n\r\n.payment-methods label.active {\r\n    border: 1px solid var(--theme-orange-color);\r\n    border-radius: 7px;\r\n}\r\n\r\n.payment-preview {\r\n    background-color: #F0F2F5;\r\n    border-radius: 8px;\r\n    margin-top: 37px;\r\n}\r\n\r\n.master-card {\r\n    background-color: #FDFDFD;\r\n    border: 1px solid #E8E8E8;\r\n    border-radius: 24px;\r\n    margin-top: -50px;\r\n}\r\n\r\n.card-dots .dot {\r\n    height: 9px;\r\n    width: 9px;\r\n    background-color: #000;\r\n    border-radius: 50%;\r\n    display: inline-block;\r\n    margin-right: 13px;\r\n}\r\n\r\n.carted-items {\r\n    display: flex;\r\n    flex-wrap: wrap;\r\n}\r\n\r\n.carted-items .item {\r\n    background-color: #fff;\r\n    padding: .4rem .8rem;\r\n    margin-right: .4rem;\r\n    font-size: .7rem;\r\n    margin-bottom: .4rem;\r\n}\r\n\r\n.price-tag .currency {\r\n    font-size: 22px;\r\n    color: #8D8D8D;\r\n    font-weight: normal;\r\n}\r\n\r\n.booking-table-parent .booking-table td {\r\n    font-family: 'Poppins', sans-serif;\r\n    vertical-align: middle;\r\n    border-top: 1px solid #dadada;\r\n    border-bottom: 0;\r\n}\r\n\r\n.booking-table-parent .booking-table td button {\r\n    font-size: .72rem;\r\n    width: 130px;\r\n}\r\n\r\naside.gradiant-list {\r\n    background: linear-gradient(175.79deg, #F05922 31.97%, #F07345 97.2%);\r\n}\r\n\r\naside.gradiant-list a {\r\n    color: #fff !important;\r\n}\r\n\r\n.multiselect-tag {\r\n    background-color: var(--theme-orange-color) !important;\r\n}\r\n\r\n.about-banner {\r\n    background-image: url(" + ___CSS_LOADER_URL_REPLACEMENT_7___ + ");\r\n    background-repeat: no-repeat;\r\n    background-size: cover;\r\n    margin-top: 68px;\r\n    padding-block: 7rem;\r\n    position: relative;\r\n    z-index: 0;\r\n    text-align: center;\r\n    background-position: center;\r\n}\r\n\r\n.about-banner::after {\r\n    content: '';\r\n    position: absolute;\r\n    inset: 0;\r\n    background-color: rgb(0 0 0 / 70%);\r\n    z-index: -1;\r\n}\r\n\r\n.contact-form {\r\n    background-color: rgba(248, 248, 248, 1);\r\n    padding: 4rem 2.5rem;\r\n    border-radius: 32px;\r\n}\r\n\r\n.user-profile {\r\n    background-color: rgba(252, 252, 252, 1);\r\n    border-radius: 3px;\r\n}", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=style&index=0&id=0c1aca79&lang=css":
+/*!*************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=style&index=0&id=0c1aca79&lang=css ***!
+  \*************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, "\n.vue-map {\r\n  width: 100%;\r\n  height: 100%;\r\n  min-height: 2rem;\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -57223,6 +62614,36 @@ try {
 
 /***/ }),
 
+/***/ "./node_modules/@vueform/multiselect/themes/default.css":
+/*!**************************************************************!*\
+  !*** ./node_modules/@vueform/multiselect/themes/default.css ***!
+  \**************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../../style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _css_loader_dist_cjs_js_clonedRuleSet_9_use_1_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_default_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../../css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../../postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./default.css */ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/@vueform/multiselect/themes/default.css");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_default_css__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_default_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ }),
+
 /***/ "./node_modules/mdb-vue-ui-kit/css/mdb.min.css":
 /*!*****************************************************!*\
   !*** ./node_modules/mdb-vue-ui-kit/css/mdb.min.css ***!
@@ -57340,6 +62761,36 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_style_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ }),
+
+/***/ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=style&index=0&id=0c1aca79&lang=css":
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=style&index=0&id=0c1aca79&lang=css ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../../../style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _css_loader_dist_cjs_js_clonedRuleSet_9_use_1_vue_loader_dist_stylePostLoader_js_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_vue_loader_dist_index_js_ruleSet_0_use_0_map_vue_vue_type_style_index_0_id_0c1aca79_lang_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../../../css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../../../vue-loader/dist/stylePostLoader.js!../../../../postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../../../vue-loader/dist/index.js??ruleSet[0].use[0]!./map.vue?vue&type=style&index=0&id=0c1aca79&lang=css */ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=style&index=0&id=0c1aca79&lang=css");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_vue_loader_dist_stylePostLoader_js_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_vue_loader_dist_index_js_ruleSet_0_use_0_map_vue_vue_type_style_index_0_id_0c1aca79_lang_css__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_vue_loader_dist_stylePostLoader_js_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_vue_loader_dist_index_js_ruleSet_0_use_0_map_vue_vue_type_style_index_0_id_0c1aca79_lang_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
 
 /***/ }),
 
@@ -58270,6 +63721,809 @@ exports["default"] = (sfc, props) => {
     }
     return target;
 };
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue":
+/*!*****************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue ***!
+  \*****************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _autocomplete_vue_vue_type_template_id_5b7498ca__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./autocomplete.vue?vue&type=template&id=5b7498ca */ "./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue?vue&type=template&id=5b7498ca");
+/* harmony import */ var _autocomplete_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./autocomplete.vue?vue&type=script&lang=js */ "./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue?vue&type=script&lang=js");
+/* harmony import */ var C_xampp_htdocs_grooming_grooming_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+
+
+
+
+;
+const __exports__ = /*#__PURE__*/(0,C_xampp_htdocs_grooming_grooming_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_autocomplete_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_autocomplete_vue_vue_type_template_id_5b7498ca__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue"]])
+/* hot reload */
+if (false) {}
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__exports__);
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue?vue&type=script&lang=js":
+/*!****************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue?vue&type=script&lang=js ***!
+  \****************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _utils_bindProps_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/bindProps.js */ "./node_modules/@fawmi/vue-google-maps/src/utils/bindProps.js");
+/* harmony import */ var _utils_simulateArrowDown_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/simulateArrowDown.js */ "./node_modules/@fawmi/vue-google-maps/src/utils/simulateArrowDown.js");
+/* harmony import */ var _build_component__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./build-component */ "./node_modules/@fawmi/vue-google-maps/src/components/build-component.js");
+
+
+
+
+
+const mappedProps = {
+  bounds: {
+    type: Object,
+  },
+  componentRestrictions: {
+    type: Object,
+    // Do not bind -- must check for undefined
+    // in the property
+    noBind: true,
+  },
+  types: {
+    type: Array,
+    default: function () {
+      return []
+    },
+  },
+}
+
+const props = {
+  selectFirstOnEnter: {
+    required: false,
+    type: Boolean,
+    default: false,
+  },
+  options: {
+    type: Object,
+  },
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  mounted() {
+    this.$gmapApiPromiseLazy().then(() => {
+      if (this.selectFirstOnEnter) {
+        (0,_utils_simulateArrowDown_js__WEBPACK_IMPORTED_MODULE_1__["default"])(this.$refs.input)
+      }
+
+      if (typeof google.maps.places.Autocomplete !== 'function') {
+        throw new Error(
+          "google.maps.places.Autocomplete is undefined. Did you add 'places' to libraries when loading Google Maps?"
+        )
+      }
+
+      /* eslint-disable no-unused-vars */
+      const finalOptions = {
+        ...(0,_utils_bindProps_js__WEBPACK_IMPORTED_MODULE_0__.getPropsValues)(this, mappedProps),
+        ...this.options,
+      }
+
+      this.$autocomplete = new google.maps.places.Autocomplete(this.$refs.input, finalOptions)
+      ;(0,_utils_bindProps_js__WEBPACK_IMPORTED_MODULE_0__.bindProps)(this, this.$autocomplete, mappedProps)
+
+      this.$watch('componentRestrictions', (v) => {
+        if (v !== undefined) {
+          this.$autocomplete.setComponentRestrictions(v)
+        }
+      })
+
+      // Not using `bindEvents` because we also want
+      // to return the result of `getPlace()`
+      this.$autocomplete.addListener('place_changed', () => {
+        this.$emit('place_changed', this.$autocomplete.getPlace())
+      })
+    })
+  },
+  props: {
+    ...(0,_build_component__WEBPACK_IMPORTED_MODULE_2__.mappedPropsToVueProps)(mappedProps),
+    ...props,
+  },
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue":
+/*!************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue ***!
+  \************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _cluster_vue_vue_type_template_id_b97a24d2__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./cluster.vue?vue&type=template&id=b97a24d2 */ "./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue?vue&type=template&id=b97a24d2");
+/* harmony import */ var _cluster_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./cluster.vue?vue&type=script&lang=js */ "./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue?vue&type=script&lang=js");
+/* harmony import */ var C_xampp_htdocs_grooming_grooming_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+
+
+
+
+;
+const __exports__ = /*#__PURE__*/(0,C_xampp_htdocs_grooming_grooming_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_cluster_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_cluster_vue_vue_type_template_id_b97a24d2__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"node_modules/@fawmi/vue-google-maps/src/components/cluster.vue"]])
+/* hot reload */
+if (false) {}
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__exports__);
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue?vue&type=script&lang=js":
+/*!***********************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue?vue&type=script&lang=js ***!
+  \***********************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _googlemaps_markerclustererplus__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @googlemaps/markerclustererplus */ "./node_modules/@googlemaps/markerclustererplus/dist/index.esm.js");
+/* harmony import */ var _build_component_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./build-component.js */ "./node_modules/@fawmi/vue-google-maps/src/components/build-component.js");
+
+
+
+
+const props = {
+  maxZoom: {
+    type: Number,
+    twoWay: false,
+  },
+  batchSizeIE: {
+    type: Number,
+    twoWay: false,
+  },
+  calculator: {
+    type: Function,
+    twoWay: false,
+  },
+  enableRetinaIcons: {
+    type: Boolean,
+    twoWay: false,
+  },
+  gridSize: {
+    type: Number,
+    twoWay: false,
+  },
+  ignoreHidden: {
+    type: Boolean,
+    twoWay: false,
+  },
+  imageExtension: {
+    type: String,
+    twoWay: false,
+  },
+  imagePath: {
+    type: String,
+    twoWay: false,
+  },
+  imageSizes: {
+    type: Array,
+    twoWay: false,
+  },
+  minimumClusterSize: {
+    type: Number,
+    twoWay: false,
+  },
+  styles: {
+    type: Array,
+    twoWay: false,
+  },
+  zoomOnClick: {
+    type: Boolean,
+    twoWay: false,
+  },
+}
+
+const events = [
+  'click',
+  'rightclick',
+  'dblclick',
+  'drag',
+  'dragstart',
+  'dragend',
+  'mouseup',
+  'mousedown',
+  'mouseover',
+  'mouseout',
+]
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_build_component_js__WEBPACK_IMPORTED_MODULE_1__["default"])({
+  mappedProps: props,
+  events,
+  name: 'cluster',
+  ctr: () => {
+    if (typeof _googlemaps_markerclustererplus__WEBPACK_IMPORTED_MODULE_0__["default"] === 'undefined') {
+      const errorMessage = 'MarkerClusterer is not installed!';
+      console.error(errorMessage);
+      throw new Error(errorMessage)
+    }
+    return _googlemaps_markerclustererplus__WEBPACK_IMPORTED_MODULE_0__["default"]
+  },
+  ctrArgs: ({ map, ...otherOptions }) => [map, [], otherOptions],
+  afterCreate(inst) {
+    const reinsertMarkers = () => {
+      const oldMarkers = inst.getMarkers()
+      inst.clearMarkers()
+      inst.addMarkers(oldMarkers)
+    }
+    for (let prop in props) {
+      if (props[prop].twoWay) {
+        this.$on(prop.toLowerCase() + '_changed', reinsertMarkers)
+      }
+    }
+  },
+  updated() {
+    if (this.$clusterObject) {
+      this.$clusterObject.repaint()
+    }
+  },
+  beforeUnmount() {
+    /* Performance optimization when destroying a large number of markers */
+    if (this.$children && this.$children.length) {
+      this.$children.forEach((marker) => {
+        if (marker.$clusterObject === this.$clusterObject) {
+          marker.$clusterObject = null
+        }
+      })
+    }
+
+
+    if (this.$clusterObject) {
+      this.$clusterObject.clearMarkers()
+    }
+  },
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue":
+/*!***************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue ***!
+  \***************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _infoWindow_vue_vue_type_template_id_6c9aa5b1__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./infoWindow.vue?vue&type=template&id=6c9aa5b1 */ "./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue?vue&type=template&id=6c9aa5b1");
+/* harmony import */ var _infoWindow_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./infoWindow.vue?vue&type=script&lang=js */ "./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue?vue&type=script&lang=js");
+/* harmony import */ var C_xampp_htdocs_grooming_grooming_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+
+
+
+
+;
+const __exports__ = /*#__PURE__*/(0,C_xampp_htdocs_grooming_grooming_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_infoWindow_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_infoWindow_vue_vue_type_template_id_6c9aa5b1__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue"]])
+/* hot reload */
+if (false) {}
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__exports__);
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue?vue&type=script&lang=js":
+/*!**************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue?vue&type=script&lang=js ***!
+  \**************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _build_component_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./build-component.js */ "./node_modules/@fawmi/vue-google-maps/src/components/build-component.js");
+
+
+
+const props = {
+  options: {
+    type: Object,
+    required: false,
+    default() {
+      return {}
+    },
+  },
+  position: {
+    type: Object,
+    twoWay: true,
+  },
+  zIndex: {
+    type: Number,
+    twoWay: true,
+  },
+}
+
+const events = ['domready', 'click', 'closeclick', 'content_changed']
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_build_component_js__WEBPACK_IMPORTED_MODULE_0__["default"])({
+  mappedProps: props,
+  events,
+  name: 'infoWindow',
+  ctr: () => google.maps.InfoWindow,
+  props: {
+    opened: {
+      type: Boolean,
+      default: true,
+    },
+  },
+
+  inject: {
+    $markerPromise: {
+      default: null,
+    },
+  },
+
+  mounted() {
+    const el = this.$refs.infoWindow
+    el.parentNode.removeChild(el)
+  },
+
+  beforeCreate(options) {
+    options.content = this.$refs.infoWindow
+
+    if (this.$markerPromise) {
+      delete options.position
+      return this.$markerPromise.then((mo) => {
+        this.$markerObject = mo
+        return mo
+      })
+    }
+  },
+  emits: ['closeclick'],
+  methods: {
+    _openInfoWindow() {
+      this.$infoWindowObject.close()
+      if (this.opened) {
+        this.$infoWindowObject.open(this.$map, this.$markerObject)
+      } else {
+        this.$emit('closeclick')
+      }
+    },
+  },
+
+  afterCreate() {
+    this._openInfoWindow()
+    this.$watch('opened', () => {
+      this._openInfoWindow()
+    })
+  },
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/map.vue":
+/*!********************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/map.vue ***!
+  \********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _map_vue_vue_type_template_id_0c1aca79__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./map.vue?vue&type=template&id=0c1aca79 */ "./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=template&id=0c1aca79");
+/* harmony import */ var _map_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./map.vue?vue&type=script&lang=js */ "./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=script&lang=js");
+/* harmony import */ var _map_vue_vue_type_style_index_0_id_0c1aca79_lang_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./map.vue?vue&type=style&index=0&id=0c1aca79&lang=css */ "./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=style&index=0&id=0c1aca79&lang=css");
+/* harmony import */ var C_xampp_htdocs_grooming_grooming_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+
+
+
+
+;
+
+
+const __exports__ = /*#__PURE__*/(0,C_xampp_htdocs_grooming_grooming_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_map_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_map_vue_vue_type_template_id_0c1aca79__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"node_modules/@fawmi/vue-google-maps/src/components/map.vue"]])
+/* hot reload */
+if (false) {}
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__exports__);
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=script&lang=js":
+/*!*******************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=script&lang=js ***!
+  \*******************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _utils_bindEvents_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/bindEvents.js */ "./node_modules/@fawmi/vue-google-maps/src/utils/bindEvents.js");
+/* harmony import */ var _utils_bindProps_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/bindProps.js */ "./node_modules/@fawmi/vue-google-maps/src/utils/bindProps.js");
+/* harmony import */ var _utils_mountableMixin_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils/mountableMixin.js */ "./node_modules/@fawmi/vue-google-maps/src/utils/mountableMixin.js");
+/* harmony import */ var _utils_TwoWayBindingWrapper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utils/TwoWayBindingWrapper.js */ "./node_modules/@fawmi/vue-google-maps/src/utils/TwoWayBindingWrapper.js");
+/* harmony import */ var _utils_WatchPrimitiveProperties_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utils/WatchPrimitiveProperties.js */ "./node_modules/@fawmi/vue-google-maps/src/utils/WatchPrimitiveProperties.js");
+/* harmony import */ var _build_component_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./build-component.js */ "./node_modules/@fawmi/vue-google-maps/src/components/build-component.js");
+
+
+
+
+
+
+
+
+
+const props = {
+  center: {
+    required: true,
+    twoWay: true,
+    type: Object,
+    noBind: true,
+  },
+  zoom: {
+    required: false,
+    twoWay: true,
+    type: Number,
+    noBind: true,
+  },
+  heading: {
+    type: Number,
+    twoWay: true,
+  },
+  mapTypeId: {
+    twoWay: true,
+    type: String,
+  },
+  tilt: {
+    twoWay: true,
+    type: Number,
+  },
+  options: {
+    type: Object,
+    default() {
+      return {}
+    },
+  },
+}
+
+const events = [
+  'bounds_changed',
+  'click',
+  'dblclick',
+  'drag',
+  'dragend',
+  'dragstart',
+  'idle',
+  'mousemove',
+  'mouseout',
+  'mouseover',
+  'resize',
+  'rightclick',
+  'tilesloaded',
+]
+
+// Plain Google Maps methods exposed here for convenience
+const linkedMethods = ['panBy', 'panTo', 'panToBounds', 'fitBounds'].reduce((all, methodName) => {
+  all[methodName] = function () {
+    if (this.$mapObject) {
+      this.$mapObject[methodName].apply(this.$mapObject, arguments)
+    }
+  }
+  return all
+}, {})
+
+// Other convenience methods exposed by Vue Google Maps
+const customMethods = {
+  resize() {
+    if (this.$mapObject) {
+      google.maps.event.trigger(this.$mapObject, 'resize')
+    }
+  },
+  resizePreserveCenter() {
+    if (!this.$mapObject) {
+      return
+    }
+
+    const oldCenter = this.$mapObject.getCenter()
+    google.maps.event.trigger(this.$mapObject, 'resize')
+    this.$mapObject.setCenter(oldCenter)
+  },
+
+  /// Override mountableMixin::_resizeCallback
+  /// because resizePreserveCenter is usually the
+  /// expected behaviour
+  _resizeCallback() {
+    this.resizePreserveCenter()
+  },
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  mixins: [_utils_mountableMixin_js__WEBPACK_IMPORTED_MODULE_2__["default"]],
+  props: (0,_build_component_js__WEBPACK_IMPORTED_MODULE_5__.mappedPropsToVueProps)({...props, ...events.reduce((obj, eventName) => ({...obj, [`on${eventName.charAt(0).toUpperCase()}${eventName.slice(1)}`.replace(/[-_]+(.)?/g, (_, c) => c ? c.toUpperCase() : '')]: Function}), {}) } ),
+  inheritAttrs: false,
+
+  provide() {
+    this.$mapPromise = new Promise((resolve, reject) => {
+      this.$mapPromiseDeferred = { resolve, reject }
+    })
+    return {
+      $mapPromise: this.$mapPromise,
+    }
+  },
+  emits: ['center_changed', 'zoom_changed', 'bounds_changed'],
+  computed: {
+    finalLat() {
+      return this.center && typeof this.center.lat === 'function'
+        ? this.center.lat()
+        : this.center.lat
+    },
+    finalLng() {
+      return this.center && typeof this.center.lng === 'function'
+        ? this.center.lng()
+        : this.center.lng
+    },
+    finalLatLng() {
+      return { lat: this.finalLat, lng: this.finalLng }
+    },
+  },
+
+  watch: {
+    zoom(zoom) {
+      if (this.$mapObject) {
+        this.$mapObject.setZoom(zoom)
+      }
+    },
+  },
+
+  mounted() {
+    return this.$gmapApiPromiseLazy()
+      .then(() => {
+        // getting the DOM element where to create the map
+        const element = this.$refs['vue-map']
+
+        // creating the map
+        const options = {
+          ...this.options,
+          ...(0,_utils_bindProps_js__WEBPACK_IMPORTED_MODULE_1__.getPropsValues)(this, props),
+        }
+        delete options.options
+        this.$mapObject = new google.maps.Map(element, options)
+
+        // binding properties (two and one way)
+        ;(0,_utils_bindProps_js__WEBPACK_IMPORTED_MODULE_1__.bindProps)(this, this.$mapObject, props)
+        // binding events
+        ;(0,_utils_bindEvents_js__WEBPACK_IMPORTED_MODULE_0__["default"])(this, this.$mapObject, events)
+
+        // manually trigger center and zoom
+        ;(0,_utils_TwoWayBindingWrapper_js__WEBPACK_IMPORTED_MODULE_3__["default"])((increment, decrement, shouldUpdate) => {
+          this.$mapObject.addListener('center_changed', () => {
+            if (shouldUpdate()) {
+              this.$emit('center_changed', this.$mapObject.getCenter())
+            }
+            decrement()
+          })
+
+          const updateCenter = () => {
+            increment()
+            this.$mapObject.setCenter(this.finalLatLng)
+          }
+
+          ;(0,_utils_WatchPrimitiveProperties_js__WEBPACK_IMPORTED_MODULE_4__["default"])(this, ['finalLat', 'finalLng'], updateCenter)
+        })
+        this.$mapObject.addListener('zoom_changed', () => {
+          this.$emit('zoom_changed', this.$mapObject.getZoom())
+        })
+        this.$mapObject.addListener('bounds_changed', () => {
+          this.$emit('bounds_changed', this.$mapObject.getBounds())
+        })
+
+        this.$mapPromiseDeferred.resolve(this.$mapObject)
+
+        return this.$mapObject
+      })
+      .catch((error) => {
+        throw error
+      })
+  },
+  methods: {
+    ...customMethods,
+    ...linkedMethods,
+  },
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/marker.vue":
+/*!***********************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/marker.vue ***!
+  \***********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _marker_vue_vue_type_template_id_21eae1a6__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./marker.vue?vue&type=template&id=21eae1a6 */ "./node_modules/@fawmi/vue-google-maps/src/components/marker.vue?vue&type=template&id=21eae1a6");
+/* harmony import */ var _marker_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./marker.vue?vue&type=script&lang=js */ "./node_modules/@fawmi/vue-google-maps/src/components/marker.vue?vue&type=script&lang=js");
+/* harmony import */ var C_xampp_htdocs_grooming_grooming_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+
+
+
+
+;
+const __exports__ = /*#__PURE__*/(0,C_xampp_htdocs_grooming_grooming_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_marker_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_marker_vue_vue_type_template_id_21eae1a6__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"node_modules/@fawmi/vue-google-maps/src/components/marker.vue"]])
+/* hot reload */
+if (false) {}
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__exports__);
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/marker.vue?vue&type=script&lang=js":
+/*!**********************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/marker.vue?vue&type=script&lang=js ***!
+  \**********************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _build_component_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./build-component.js */ "./node_modules/@fawmi/vue-google-maps/src/components/build-component.js");
+
+
+
+
+const props = {
+  animation: {
+    twoWay: true,
+    type: Number,
+  },
+  attribution: {
+    type: Object,
+  },
+  clickable: {
+    type: Boolean,
+    twoWay: true,
+    default: true,
+  },
+  cursor: {
+    type: String,
+    twoWay: true,
+  },
+  draggable: {
+    type: Boolean,
+    twoWay: true,
+    default: false,
+  },
+  icon: {
+    twoWay: true,
+  },
+  label: {},
+  opacity: {
+    type: Number,
+    default: 1,
+  },
+  options: {
+    type: Object,
+  },
+  place: {
+    type: Object,
+  },
+  position: {
+    type: Object,
+    twoWay: true,
+  },
+  shape: {
+    type: Object,
+    twoWay: true,
+  },
+  title: {
+    type: String,
+    twoWay: true,
+  },
+  zIndex: {
+    type: Number,
+    twoWay: true,
+  },
+  visible: {
+    twoWay: true,
+    default: true,
+  },
+}
+
+const events = [
+  'click',
+  'rightclick',
+  'dblclick',
+  'drag',
+  'dragstart',
+  'dragend',
+  'mouseup',
+  'mousedown',
+  'mouseover',
+  'mouseout',
+]
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_build_component_js__WEBPACK_IMPORTED_MODULE_0__["default"])({
+  mappedProps: props,
+  events,
+  name: 'marker',
+  ctr: () => google.maps.Marker,
+
+  inject: {
+    $clusterPromise: {
+      default: null,
+    },
+  },
+  emits: events,
+  unmounted() {
+    if (!this.$markerObject) {
+      return
+    }
+
+    if (this.$clusterObject) {
+      // Repaint will be performed in `updated()` of cluster
+      this.$clusterObject.removeMarker(this.$markerObject, true)
+    } else {
+      this.$markerObject.setMap(null)
+    }
+  },
+
+  beforeCreate(options) {
+    if (this.$clusterPromise) {
+      options.map = null
+    }
+
+    return this.$clusterPromise
+  },
+
+  afterCreate(inst) {
+    events.forEach((event)=> {
+      inst.addListener(event, (payload)=> {
+        this.$emit(event, payload)
+      });
+    })
+    if (this.$clusterPromise) {
+      this.$clusterPromise.then((co) => {
+        this.$clusterObject = co
+        co.addMarker(inst)
+      })
+    }
+  },
+}));
 
 
 /***/ }),
@@ -62186,6 +68440,19 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=style&index=0&id=0c1aca79&lang=css":
+/*!****************************************************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=style&index=0&id=0c1aca79&lang=css ***!
+  \****************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _style_loader_dist_cjs_js_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_vue_loader_dist_stylePostLoader_js_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_vue_loader_dist_index_js_ruleSet_0_use_0_map_vue_vue_type_style_index_0_id_0c1aca79_lang_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../style-loader/dist/cjs.js!../../../../css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../../../vue-loader/dist/stylePostLoader.js!../../../../postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../../../vue-loader/dist/index.js??ruleSet[0].use[0]!./map.vue?vue&type=style&index=0&id=0c1aca79&lang=css */ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=style&index=0&id=0c1aca79&lang=css");
+
+
+/***/ }),
+
 /***/ "./node_modules/vue3-timepicker/src/VueTimepicker.vue?vue&type=style&index=0&id=3e1cd4aa&lang=css":
 /*!********************************************************************************************************!*\
   !*** ./node_modules/vue3-timepicker/src/VueTimepicker.vue?vue&type=style&index=0&id=3e1cd4aa&lang=css ***!
@@ -62459,6 +68726,86 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue?vue&type=script&lang=js":
+/*!*****************************************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue?vue&type=script&lang=js ***!
+  \*****************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* reexport safe */ _vue_loader_dist_index_js_ruleSet_0_use_0_autocomplete_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__["default"])
+/* harmony export */ });
+/* harmony import */ var _vue_loader_dist_index_js_ruleSet_0_use_0_autocomplete_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../vue-loader/dist/index.js??ruleSet[0].use[0]!./autocomplete.vue?vue&type=script&lang=js */ "./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue?vue&type=script&lang=js");
+ 
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue?vue&type=script&lang=js":
+/*!************************************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue?vue&type=script&lang=js ***!
+  \************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* reexport safe */ _vue_loader_dist_index_js_ruleSet_0_use_0_cluster_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__["default"])
+/* harmony export */ });
+/* harmony import */ var _vue_loader_dist_index_js_ruleSet_0_use_0_cluster_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../vue-loader/dist/index.js??ruleSet[0].use[0]!./cluster.vue?vue&type=script&lang=js */ "./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue?vue&type=script&lang=js");
+ 
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue?vue&type=script&lang=js":
+/*!***************************************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue?vue&type=script&lang=js ***!
+  \***************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* reexport safe */ _vue_loader_dist_index_js_ruleSet_0_use_0_infoWindow_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__["default"])
+/* harmony export */ });
+/* harmony import */ var _vue_loader_dist_index_js_ruleSet_0_use_0_infoWindow_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../vue-loader/dist/index.js??ruleSet[0].use[0]!./infoWindow.vue?vue&type=script&lang=js */ "./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue?vue&type=script&lang=js");
+ 
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=script&lang=js":
+/*!********************************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=script&lang=js ***!
+  \********************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* reexport safe */ _vue_loader_dist_index_js_ruleSet_0_use_0_map_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__["default"])
+/* harmony export */ });
+/* harmony import */ var _vue_loader_dist_index_js_ruleSet_0_use_0_map_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../vue-loader/dist/index.js??ruleSet[0].use[0]!./map.vue?vue&type=script&lang=js */ "./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=script&lang=js");
+ 
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/marker.vue?vue&type=script&lang=js":
+/*!***********************************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/marker.vue?vue&type=script&lang=js ***!
+  \***********************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* reexport safe */ _vue_loader_dist_index_js_ruleSet_0_use_0_marker_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__["default"])
+/* harmony export */ });
+/* harmony import */ var _vue_loader_dist_index_js_ruleSet_0_use_0_marker_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../vue-loader/dist/index.js??ruleSet[0].use[0]!./marker.vue?vue&type=script&lang=js */ "./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/marker.vue?vue&type=script&lang=js");
+ 
+
+/***/ }),
+
 /***/ "./node_modules/vue3-timepicker/src/VueTimepicker.vue?vue&type=script&lang=js":
 /*!************************************************************************************!*\
   !*** ./node_modules/vue3-timepicker/src/VueTimepicker.vue?vue&type=script&lang=js ***!
@@ -62475,6 +68822,86 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue?vue&type=template&id=5b7498ca":
+/*!***********************************************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue?vue&type=template&id=5b7498ca ***!
+  \***********************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* reexport safe */ _vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_vue_loader_dist_index_js_ruleSet_0_use_0_autocomplete_vue_vue_type_template_id_5b7498ca__WEBPACK_IMPORTED_MODULE_0__.render)
+/* harmony export */ });
+/* harmony import */ var _vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_vue_loader_dist_index_js_ruleSet_0_use_0_autocomplete_vue_vue_type_template_id_5b7498ca__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../../../vue-loader/dist/index.js??ruleSet[0].use[0]!./autocomplete.vue?vue&type=template&id=5b7498ca */ "./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue?vue&type=template&id=5b7498ca");
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue?vue&type=template&id=b97a24d2":
+/*!******************************************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue?vue&type=template&id=b97a24d2 ***!
+  \******************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* reexport safe */ _vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_vue_loader_dist_index_js_ruleSet_0_use_0_cluster_vue_vue_type_template_id_b97a24d2__WEBPACK_IMPORTED_MODULE_0__.render)
+/* harmony export */ });
+/* harmony import */ var _vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_vue_loader_dist_index_js_ruleSet_0_use_0_cluster_vue_vue_type_template_id_b97a24d2__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../../../vue-loader/dist/index.js??ruleSet[0].use[0]!./cluster.vue?vue&type=template&id=b97a24d2 */ "./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue?vue&type=template&id=b97a24d2");
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue?vue&type=template&id=6c9aa5b1":
+/*!*********************************************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue?vue&type=template&id=6c9aa5b1 ***!
+  \*********************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* reexport safe */ _vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_vue_loader_dist_index_js_ruleSet_0_use_0_infoWindow_vue_vue_type_template_id_6c9aa5b1__WEBPACK_IMPORTED_MODULE_0__.render)
+/* harmony export */ });
+/* harmony import */ var _vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_vue_loader_dist_index_js_ruleSet_0_use_0_infoWindow_vue_vue_type_template_id_6c9aa5b1__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../../../vue-loader/dist/index.js??ruleSet[0].use[0]!./infoWindow.vue?vue&type=template&id=6c9aa5b1 */ "./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue?vue&type=template&id=6c9aa5b1");
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=template&id=0c1aca79":
+/*!**************************************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=template&id=0c1aca79 ***!
+  \**************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* reexport safe */ _vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_vue_loader_dist_index_js_ruleSet_0_use_0_map_vue_vue_type_template_id_0c1aca79__WEBPACK_IMPORTED_MODULE_0__.render)
+/* harmony export */ });
+/* harmony import */ var _vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_vue_loader_dist_index_js_ruleSet_0_use_0_map_vue_vue_type_template_id_0c1aca79__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../../../vue-loader/dist/index.js??ruleSet[0].use[0]!./map.vue?vue&type=template&id=0c1aca79 */ "./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=template&id=0c1aca79");
+
+
+/***/ }),
+
+/***/ "./node_modules/@fawmi/vue-google-maps/src/components/marker.vue?vue&type=template&id=21eae1a6":
+/*!*****************************************************************************************************!*\
+  !*** ./node_modules/@fawmi/vue-google-maps/src/components/marker.vue?vue&type=template&id=21eae1a6 ***!
+  \*****************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* reexport safe */ _vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_vue_loader_dist_index_js_ruleSet_0_use_0_marker_vue_vue_type_template_id_21eae1a6__WEBPACK_IMPORTED_MODULE_0__.render)
+/* harmony export */ });
+/* harmony import */ var _vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_vue_loader_dist_index_js_ruleSet_0_use_0_marker_vue_vue_type_template_id_21eae1a6__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../../../vue-loader/dist/index.js??ruleSet[0].use[0]!./marker.vue?vue&type=template&id=21eae1a6 */ "./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/marker.vue?vue&type=template&id=21eae1a6");
+
+
+/***/ }),
+
 /***/ "./node_modules/vue3-timepicker/src/VueTimepicker.vue?vue&type=template&id=3e1cd4aa":
 /*!******************************************************************************************!*\
   !*** ./node_modules/vue3-timepicker/src/VueTimepicker.vue?vue&type=template&id=3e1cd4aa ***!
@@ -62488,6 +68915,130 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_vue_loader_dist_index_js_ruleSet_0_use_0_VueTimepicker_vue_vue_type_template_id_3e1cd4aa__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../vue-loader/dist/index.js??ruleSet[0].use[0]!./VueTimepicker.vue?vue&type=template&id=3e1cd4aa */ "./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/vue3-timepicker/src/VueTimepicker.vue?vue&type=template&id=3e1cd4aa");
 
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue?vue&type=template&id=5b7498ca":
+/*!********************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/autocomplete.vue?vue&type=template&id=5b7498ca ***!
+  \********************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* binding */ render)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("input", (0,vue__WEBPACK_IMPORTED_MODULE_0__.mergeProps)({ ref: "input" }, _ctx.$attrs, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toHandlers)(_ctx.$attrs)), null, 16 /* FULL_PROPS */))
+}
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue?vue&type=template&id=b97a24d2":
+/*!***************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/cluster.vue?vue&type=template&id=b97a24d2 ***!
+  \***************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* binding */ render)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", null, [
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "default")
+  ]))
+}
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue?vue&type=template&id=6c9aa5b1":
+/*!******************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/infoWindow.vue?vue&type=template&id=6c9aa5b1 ***!
+  \******************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* binding */ render)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+
+const _hoisted_1 = { ref: "infoWindow" }
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "default")
+  ], 512 /* NEED_PATCH */))
+}
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=template&id=0c1aca79":
+/*!***********************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/map.vue?vue&type=template&id=0c1aca79 ***!
+  \***********************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* binding */ render)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+
+const _hoisted_1 = { class: "vue-map-hidden" }
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
+    class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["vue-map-container", _ctx.$attrs.class])
+  }, [
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+      ref: "vue-map",
+      class: "vue-map",
+      style: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeStyle)(_ctx.$attrs.style ? _ctx.$attrs.style : '')
+    }, null, 4 /* STYLE */),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [
+      (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "default")
+    ]),
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "visible")
+  ], 2 /* CLASS */))
+}
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/marker.vue?vue&type=template&id=21eae1a6":
+/*!**************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./node_modules/@fawmi/vue-google-maps/src/components/marker.vue?vue&type=template&id=21eae1a6 ***!
+  \**************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* binding */ render)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
+    onClick: _cache[0] || (_cache[0] = ()=> {_ctx.console.log('sdfsd')})
+  }, [
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "default")
+  ]))
+}
 
 /***/ }),
 
