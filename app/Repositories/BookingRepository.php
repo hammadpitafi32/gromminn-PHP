@@ -3,10 +3,13 @@ namespace App\Repositories;
 use App\Repositories\Interfaces\BookingInterface;
 use Illuminate\Http\Request;
 use App\Models\Booking;
+use App\Models\BookingService;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 
 use Auth;
 use App\Models\UserBusiness;
+use App\Models\UserBusinessCategoryService;
 use Carbon\Carbon;
 use DateTime;
 use DateInterval;
@@ -15,7 +18,8 @@ use DatePeriod;
 use Label84\HoursHelper\Facades\HoursHelper;
 
 use Cartalyst\Stripe\Stripe;
-
+use App\Models\ UserStripeInfo;
+use App\Models\ UserStripeCard;
 class BookingRepository implements BookingInterface
 {
 	protected $booking;
@@ -38,7 +42,92 @@ class BookingRepository implements BookingInterface
 	public function create()
 	{
 		$request = $this->request;
+
+		$validator = Validator::make($request->all(), [
+            'service_ids' => 'required',
+            'date' => 'required',
+            'user_business_id' => 'required',
+            'charges' => 'required',
+            'card_no' => 'required',
+            'exp_month' => 'required',
+            'exp_year' => 'required',
+            'cvc' => 'required',
+        ]);
+        //Send failed response if request is not valid
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->messages(),
+                'success' => false
+            ], 400);
+        }
+
+        $category_services = UserBusinessCategoryService::find($request->service_ids);
+
+        $total_charges = $category_services->sum('charges');
+        
+		$payment_result = $this->stripePayment($request,$total_charges);
+
+		if ($payment_result['success'] == false)
+        {
+            return response()->json([
+                'success' => false,
+                'msg' => $payment_result['result']->getMessage(),
+            ]);
+        }
+		// dd($request->all());
+		$uniqid = Str::random(9);
+		$total_booking = Booking::withTrashed()->where('created_at','like', '%'.date('Y-m'). '%')->count();
+        $total_booking +=1;
+
+        $total_duration = null;
+
+		$booking = Booking::create([
+			'booking_no' => 'G-BK-'.date('ym').$total_booking,
+			'user_id' => Auth::id(),
+			'user_business_id' => $request->user_business_id,
+			// 'total_duration' => $request->total_duration,
+			'date' => $request->date,
+			'estimated_time' => $request->estimated_time,
+			'payment_type' => 'stripe',
+			'charges' => $total_charges,
+		]);
+
+		foreach ($category_services as $category_service) 
+		{
+			$category_service->total_duration;
+			$duration = $category_service->duration;
+
+			if ($total_duration) 
+			{
+				$secs = strtotime($duration) - strtotime("00:00:00");
+				$total_duration = date("H:i:s", strtotime($total_duration) + $secs);
+			}
+			else
+			{
+				$total_duration = $category_service->duration;
+			}
+
+			BookingService::create([
+				'booking_id' => $booking->id,
+				'user_business_category_service_id' => $category_service->id,
+				'duration' => $category_service->duration,
+				'charges' => $category_service->charges,
+				'type' => $category_service->type,
+			]);
+		}
+		$booking->update([
+			'total_duration' => $total_duration
+		]);
+        return response()->json([
+            'success' => true,
+            'data' => $booking
+        ], 200);
+	}
+
+	public function stripePayment($request,$total_charges)
+	{
 		$stripe = Stripe::make(env('STRIPE_SECRET'));
+		// dd(env('STRIPE_SECRET'));
 		$token = $stripe->tokens()->create([
 			'card' => [
 				'number' => $request->card_no,
@@ -47,8 +136,14 @@ class BookingRepository implements BookingInterface
 				'cvc' => $request->cvc
 			]
 		]);
+		// dd($token);
 		if(!isset($token['id']))
 		{
+
+			return $data = [
+                'success' => false,
+                'message' => $e,
+            ];
 			return response()->json([
 				'success' => false,
 				'message' => 'The stripe token was not generated correctly, Please contact support!'
@@ -56,40 +151,27 @@ class BookingRepository implements BookingInterface
 		}
 		// dd($token);
 
-		$customer = $stripe->customers()->create([
-			'name' => Auth::user()->name,
-			'email' => Auth::user()->email,
-			'phone' => Auth::user()->phone,
-			// 'address' => [
-			// 	'line1' =>$this->line1,
-			// 	'postal_code' => $this->zipcode,
-			// 	'city' => $this->city,
-			// 	'state' => $this->province,
-			// 	'country' => $this->country
-			// ],
-			// 'shipping' => [
-			// 	'name' => $this->firstname . ' ' . $this->lastname,
-			// 	'address' => [
-			// 		'line1' =>$this->line1,
-			// 		'postal_code' => $this->zipcode,
-			// 		'city' => $this->city,
-			// 		'state' => $this->province,
-			// 		'country' => $this->country
-			// 	],
-			// ],
-			'source' => $token['id']
-		]);
+		$customer = $this->createStripeCustomer($stripe,$token);
 
-		$charge = $stripe->charges()->create([
-			'customer' => $customer['id'],
-			'currency' => 'USD',
-			'amount' => 100,
-			'description' => 'Payment for order no ' . 12365
-		]);
+		$customer_object = UserStripeInfo::updateOrCreate([
+            'user_id' => Auth::id()
+        ],
+        [
+            'customer_id'   => $customer['id'],
+        ]);
+
+        $customer_card = $this->createStripeCard($stripe,$customer_object,$token);
+
+        $charge = $stripe->charges()->create([
+            'customer'    =>  $customer_object->customer_id,
+            'currency'    =>  'USD',
+            'amount'      =>  $total_charges,
+            'description' =>  'Payment Charged'
+        ]);
 
 		if($charge['status'] == 'succeeded')
 		{
-			dd('done');
+			return $charges;
 			// $this->makeTransaction($order->id,'approved');
 			// $this->resetCart();
 		}
@@ -101,46 +183,37 @@ class BookingRepository implements BookingInterface
 			],400);
 			// $this->thankyou = 0;
 		}
-		dd($request->all());
-		$uniqid = Str::random(9);
-        $user = $request->id ?  $this->user->find($request->id) : $this->user;
-
-		$user = $this->user->updateOrCreate(
-			[
-				'email' => $request->email,
-			],
-			[
-				'name' => $request->name,
-				'password' => Hash::make($request->password),
-				'role_id' => $request->role_id,
-				'added_by' => $request->added_by,
-			]
-		);
-
-		$user->user_detail()->updateOrCreate(
-			[
-				'user_id'=>$user->id,
-			],
-			[
-				'phone'=>$request->phone,
-				'gender'=>$request->gender,
-				'date_of_birth'=>$request->date_of_birth,
-				'address_line_1'=>$request->address_line_1,
-				'address_line_2'=>$request->address_line_2,
-				'country_id'=>$request->country_id,
-                'state_id' => $request->state_id,
-                'city' => $request->city,
-		    	'zip_code' => $request->zip_code,
-				'tax_id'=>$request->tax_id
-			]
-		);
-		// dd($this->request->all(),$request->role_id);
-		return $user;
-		// return response()->json([
-		// 	'success' => 200,
-		// 	'user' => $user
-		// ]);
 	}
+
+	public function createStripeCustomer($stripe,$token)
+    {
+        // create a new customer id
+        $customer = $stripe->customers()->create([
+			'name' => Auth::user()->name,
+			'email' => Auth::user()->email,
+			'phone' => Auth::user()->phone,
+			'source' => $token['id']
+		]);
+
+        return $customer;
+    }
+
+    public function createStripeCard($stripe,$customer_object,$token)
+    {
+    	$card = $stripe->cards()->create($customer_object['customer_id'], $token['id']);
+        // save customer card if card is not present
+        $customer_card = UserStripeCard::updateOrCreate([
+            'user_stripe_info_id' => $customer_object->id
+        ],
+        [
+            'card_id'   => $card['id'],
+            'last_four_digit' => $card['last4'],
+            'card_type' => $card['brand']
+
+        ]);
+
+        return $customer_card;
+    }
 
 	public function getEstimatedTime()
 	{
@@ -212,4 +285,6 @@ class BookingRepository implements BookingInterface
 
 		dd($bookings->pluck('total_duration')->toArray(),$date);
 	}
+
+	
 }

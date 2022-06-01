@@ -2,15 +2,18 @@
   <div class="bg-white shadow-6-strong p-3 rounded-5 filter-box">
     <div class="d-flex align-items-center">
       <select
-        name="location"
-        id="location"
-        v-model="location"
-        class="form-select border-0 me-4"
+        name="sort"
+        id=""
+        v-model="sort"
+        class="form-select border-0 me-3"
       >
-        <option value="">Location</option>
-        <option value="location-1">Location 1</option>
-        <option value="location-2">Location 2</option>
-        <option value="location-3">Location 3</option>
+        <option value="">Sorting</option>
+        <option value="all">All</option>
+        <option value="star-1">1 Star</option>
+        <option value="star-2">2 Star</option>
+        <option value="star-3">3 Star</option>
+        <option value="star-4">4 Star</option>
+        <option value="star-5">5 Star</option>
       </select>
 
       <select
@@ -20,14 +23,18 @@
         class="form-select border-0 me-4"
       >
         <option value="">Category</option>
-        <option value="category-1">Category 1</option>
-        <option value="category-2">Category 2</option>
-        <option value="category-3">Category 3</option>
+        <option
+          v-for="category in categoriesFromAdmin"
+          :key="category.id"
+          :value="category.name"
+        >
+          {{ category.name }}
+        </option>
       </select>
 
       <MDBBtn
         class="text-white bg-orange w-25"
-        :disabled="!location && !category"
+        :disabled="!sort && !category"
         @click="paramsHandle()"
         >Search</MDBBtn
       >
@@ -38,6 +45,7 @@
 
 <script setup>
 import { ref } from "@vue/reactivity";
+import { computed } from "@vue/runtime-core";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import NoAuthModal from "../modals/NoAuthModal.vue";
@@ -45,25 +53,24 @@ import NoAuthModal from "../modals/NoAuthModal.vue";
 const router = useRouter();
 const store = useStore();
 
-const location = ref("");
+const sort = ref("");
 const category = ref("");
 const modalShow = ref(false);
 
-const paramsHandle = () => {
+const categoriesFromAdmin = computed(() => store.state.allCategories);
 
+const paramsHandle = () => {
   if (store.state.auth) {
-    const queries = {
-        
-    }
+    const queries = {};
     router.push({
       path: "/booking-list",
       query: {
-        ...(location.value && {location: location.value}),
-        ...(category.value && {category: category.value})
+        ...(sort.value && { rating: sort.value }),
+        ...(category.value && { category: category.value.toLowerCase() }),
       },
     });
   } else {
-      modalShow.value = true
+    router.push("/register");
   }
 };
 </script>

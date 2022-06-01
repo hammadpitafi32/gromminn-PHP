@@ -45,7 +45,7 @@
       </div>
       <div class="form-group mb-4">
         <label for="name" class="fw-500 mb-3">Card Holder Number</label>
-        <MDBInput type="text" v-model="name" class="py-3 fw-500" />
+        <input type="text" v-model="name" class="form-control py-3 fw-500" />
       </div>
       <div class="row mb-3 align-items-center">
         <div class="col-6">
@@ -98,6 +98,8 @@
           text-capitalize
           fs-6
         "
+        :disabled="!itemsForBooking"
+        @click="handlePayment()"
         >Pay Now</MDBBtn
       >
     </form>
@@ -106,8 +108,16 @@
 
 <script setup>
 import { ref } from "@vue/reactivity";
-import { watch } from "@vue/runtime-core";
+import { computed, watch, watchEffect } from "@vue/runtime-core";
 import { MDBInput } from "mdb-vue-ui-kit";
+
+const emit = defineEmits(["sendData"]);
+
+const props = defineProps({
+  data: Object,
+});
+
+const itemsForBooking = computed(() => props.data.item_in_cart);
 
 const name = ref("");
 const cvv = ref("");
@@ -165,6 +175,18 @@ watch(expMonth, (newValue, oldValue) => {
   }
 });
 
+// Sending Data from this component to paymentMethod component
+watchEffect(() => {
+  emit("sendData", {
+    name: name.value,
+    card_number: cardNumberForRequest.value,
+    exp_month: expMonth.value,
+    exp_year: expYear.value,
+  });
+
+  // console.log(itemsForBooking.value);
+});
+
 watch(expYear, (newValue, oldValue) => {
   let regix = /^[0-9]*$/;
   let test = regix.test(newValue);
@@ -174,6 +196,9 @@ watch(expYear, (newValue, oldValue) => {
     expYear.value = oldValue;
   }
 });
+
+// Payment function
+const handlePayment = () => {};
 </script>
 
 <style scoped>

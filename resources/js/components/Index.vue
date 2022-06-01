@@ -6,6 +6,7 @@
         v-model="carousel"
         fade
         :items="items"
+        :pause="false"
         :interval="false"
         itemsClass="slider-image img-fluid"
         class="main-slider"
@@ -19,8 +20,14 @@
           Grooming is here to book an Appointment for you without <br />
           making a call
         </p>
-        <MDBBtn class="bg-orange text-white text-capitalize"
-           @click="store.state.auth ? router.push('/booking-list') : modalShow = true">Get Started</MDBBtn
+        <MDBBtn
+          class="bg-orange text-white text-capitalize"
+          @click="
+            store.state.auth
+              ? router.push('/booking-list')
+              : router.push('/register')
+          "
+          >Get Started</MDBBtn
         >
       </div>
     </MDBContainer>
@@ -388,7 +395,7 @@
 
 <script setup>
 import { ref } from "@vue/reactivity";
-import { onMounted, watchEffect } from "@vue/runtime-core";
+import { computed, onMounted, watchEffect } from "@vue/runtime-core";
 import { MDBCarousel, MDBIcon } from "mdb-vue-ui-kit";
 import NoAuthModal from "./modals/NoAuthModal.vue";
 import { useRouter } from "vue-router";
@@ -408,10 +415,10 @@ onMounted(() => {
 });
 
 watchEffect(() => {
-  if(store.state.role == 'Provider'){
-    router.push('/my-shop')
+  if (store.state.role == "Provider") {
+    router.push("/my-shop");
   }
-})
+});
 
 const items = [
   {

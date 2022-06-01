@@ -24,10 +24,13 @@ Route::group(['namespace' => 'Api'],function()
     Route::post('register', 'ApiAuthController@register');
     // Route::post('logout', 'ApiAuthController@logout');
     // Route::post('/demo','BusinessController@demo'); 
+    Route::get('get-categories', 'UserBusinessController@getCategories');
+
     Route::group(['middleware' => 'auth.jwt'], function () {
         Route::get('logout', 'ApiAuthController@logout');
 
         Route::get('get-user-business/{id?}', 'UserBusinessController@getUserBusiness');
+    
         /*service provider start*/
         Route::group(['middleware' => 'provider.jwt'], function () {
 
@@ -37,7 +40,6 @@ Route::group(['namespace' => 'Api'],function()
             // Route::post('create-user-category', 'BusinessController@CreateOrUpdateBusinessCategory');
 
             Route::post('bind-categories', 'BusinessController@bindCategories');
-
 
             Route::get('get-user-categories', 'UserBusinessController@getUserCategories');
             Route::delete('delete-user-category/{id}', 'UserBusinessController@deleteUserCategory');

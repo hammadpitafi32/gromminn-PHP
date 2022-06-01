@@ -115,6 +115,7 @@ trait CategoryTrait {
 
     public function bindCategoriesToUser(Request $request)
     {
+        // dd('sdf');
         $categories = Category::whereIn('id',$request->category_ids)->get();
         if ($categories->count() > 0) 
         {
@@ -143,10 +144,10 @@ trait CategoryTrait {
         return $this->userCategories($request);
     }
 
-    /*admin access for now*/
+    
     public function getAllCategories()
     {
-        $categories = Category::all();
+        return Category::all();
     }
   
 }
