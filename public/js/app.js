@@ -36954,7 +36954,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "render": () => (/* binding */ render)
 /* harmony export */ });
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
-/* harmony import */ var _assets_img_logo_svg__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../assets/img/logo.svg */ "./resources/js/assets/img/logo.svg");
+/* harmony import */ var _assets_img_logo_2_svg__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../assets/img/logo-2.svg */ "./resources/js/assets/img/logo-2.svg");
 /* harmony import */ var _assets_img_avatar_png__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../assets/img/avatar.png */ "./resources/js/assets/img/avatar.png");
 
 
@@ -36966,7 +36966,7 @@ var _withScopeId = function _withScopeId(n) {
 
 var _hoisted_1 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
-    src: _assets_img_logo_svg__WEBPACK_IMPORTED_MODULE_1__["default"],
+    src: _assets_img_logo_2_svg__WEBPACK_IMPORTED_MODULE_1__["default"],
     alt: "logo",
     "class": "img-fluid"
   }, null, -1
@@ -44294,7 +44294,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/logo-2.svg?68c306f0a570d219f8fce571ee92d815");
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/logo-2.svg?084f717c806f4725ed724eba66c44a01");
 
 /***/ }),
 
@@ -44309,7 +44309,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/logo.svg?284bd817cc9c8921244ab49cbbde0f79");
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/logo.svg?d8122923518e4df8b2ddc37bd7bd3957");
 
 /***/ }),
 
