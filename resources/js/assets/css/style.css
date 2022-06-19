@@ -884,3 +884,191 @@ aside.gradiant-list a {
 .gm-style-iw {
     max-width: 350px !important;
 }
+/*new pages css*/
+* {
+    padding: 0px;
+    margin: 0px;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
+
+.wrapper {
+    height: 100%;
+    width: 100%;
+    background-color: white;
+    padding: 30px;
+}
+
+.main_container {
+    background-color: #f8f8f8;
+    padding: 20px;
+    border-radius: 16px;
+}
+
+.form_group {
+    width: 100%;
+    margin: 10px 0px;
+}
+
+.form_group input {
+    background: #FFFFFF;
+    border: 1px solid #E4E4E4;
+    border-radius: 6px;
+    width: 100%;
+    height: 50px;
+    margin-top: 10px;
+}
+
+.form_group label {
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 16px;
+
+    color: #000000;
+
+}
+
+.bank__title {
+    font-family: Roboto;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 28px;
+    letter-spacing: 0em;
+    text-align: left;
+    color: #242529;
+    margin: 15px 0px;
+
+
+}
+
+.footer_detail {
+    margin-top: 30px;
+    display: flex;
+    height: 390px;
+    padding: 30px 20px;
+    flex-wrap: wrap;
+}
+
+.image__container {
+    flex: 0 0 70%;
+    height: 100%;
+}
+
+.image__container img {
+    width: 100%;
+    height: 340px;
+    object-fit: cover;
+}
+
+.buttons__container {
+    flex: 0 0 30%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+}
+
+.buttons__container .buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.buttons__container button {
+    width: 145px;
+    height: 40px;
+    color: white;
+    font-family: Roboto;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 19px;
+    letter-spacing: 0em;
+
+    border-radius: 6px;
+    border: 1px solid #BEC5C9;
+}
+
+.buttons__container .btn_cancel {
+
+    background: #BEC5C9;
+
+    border: 1px solid #BEC5C9;
+}
+
+.buttons__container .btn_add {
+
+    background: #F05922;
+
+    border: 1px solid #F05922;
+}
+
+
+/*==========my earnings =====*/
+.earnings_detail {
+    display: flex;
+    justify-content: space-between;
+    margin: 50px 0px;
+}
+
+.single_earning {
+    flex: 0 0 30%;
+    background-color: #f8f8f8;
+
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 8px;
+}
+
+.expence_title {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 21px;
+    margin-top: 10px;
+    color: #F15922;
+
+}
+
+.expence_amount {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 29px;
+    line-height: 34px;
+
+    color: #343434;
+}
+
+.expence_flow {
+    height: 75px;
+    width: 75px;
+    background: #FFD3C3;
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.expence_flow img {
+    width: 50%;
+    height: 50%;
+    object-fit: cover;
+}
+
+.earnings_graph {
+    display: flex;
+    justify-content: space-between;
+
+
+}
+
+.graph_container {
+    flex: 0 0 32%;
+    height: 400px;
+    background: #FFFFFF;
+    box-shadow: 0px 4px 27px 9px rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+
+
+}

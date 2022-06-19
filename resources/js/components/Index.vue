@@ -17,7 +17,7 @@
           <span class="text-orange d-block">in your area</span>
         </h2>
         <p class="small">
-          Grooming is here to book an Appointment for you without <br />
+          groominn is here to book an Appointment for you without <br />
           making a call
         </p>
         <MDBBtn
@@ -62,7 +62,7 @@
           <div ref="rightSide">
             <MDBRow>
               <MDBCol col="10" class="mx-auto text-center">
-                <h2 class="text-orange fw-bold mb-3">Why choose Grooming?</h2>
+                <h2 class="text-orange fw-bold mb-3">Why choose groominn?</h2>
                 <p class="text-color-1 small">
                   The digital era is fully upon us and the internet is
                   completely changing the way that we live and do business.

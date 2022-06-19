@@ -70,10 +70,12 @@
       </MDBCol>
     </MDBRow>
   </MDBContainer>
+  <Footer/>
 </template>
 
 <script setup>
 import { MDBInput } from "mdb-vue-ui-kit";
+import Footer from "../layout/Footer.vue";
 </script>
 
 <style scoped>

@@ -15,6 +15,8 @@ import Home from '../components/Index.vue';
 import AboutUs from '../components/AboutUs.vue';
 import ContactUs from '../components/ContactUs.vue';
 import store from "../store";
+import earnings from '../components/provider/earnings/MyEarnings.vue';
+import bankDetails from '../components/provider/bankdetails/bankdetails.vue';
 
 const authentication = store.state.auth;
 
@@ -70,6 +72,22 @@ const routes = [{
     path: '/add-shop',
     name: 'addShop',
     component: AddShop,
+    meta: {
+        sidebar: true
+    },
+},
+{
+    path: '/my-earnings',
+    name: 'myearnings',
+    component: earnings,
+    meta: {
+        sidebar: true
+    },
+},
+{
+    path: '/bank-details',
+    name: 'bankdetails',
+    component: bankDetails,
     meta: {
         sidebar: true
     },
