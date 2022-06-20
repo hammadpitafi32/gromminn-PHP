@@ -13,7 +13,7 @@
     <span class="icon text-white-50">
       <i class="fas fa-plus"></i>
     </span>
-    <span class="text">Add Category dot</span>
+    <span class="text">Add Category</span>
   </a>
 </div>
 <div class="card-body">
